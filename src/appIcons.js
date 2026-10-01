@@ -1636,21 +1636,22 @@ export const TaskbarAppIcon = GObject.registerClass(
     }
 
     _handleNotifications() {
-      if (!this._nWindows && !this.window) return
-
       let monitor = this.dtpPanel.panelManager.notificationsMonitor
-      let state = monitor.getState(this.app)
+      // an icon without windows shows no badge, but the update clearing a
+      // badge often arrives after the last window is gone (the attention
+      // source dies with the window), so it must still reset the badge
+      let state = (this._nWindows || this.window) && monitor.getState(this.app)
       let count = 0
 
-      if (!state) return
+      if (!state && !this._notificationsCount) return
 
       if (SETTINGS.get_boolean('progress-show-count')) {
-        this.iconAnimator[`${state.urgent ? 'add' : 'remove'}Animation`](
+        this.iconAnimator[`${state?.urgent ? 'add' : 'remove'}Animation`](
           this.icon._iconBin,
           'dance',
         )
 
-        if (state.total) {
+        if (state?.total) {
           count = state.total > 9 ? '9+' : state.total
           this.dtpPanel.intellihide.revealAndHold(Hold.NOTIFY)
         } else this.dtpPanel.intellihide.release(Hold.NOTIFY)
