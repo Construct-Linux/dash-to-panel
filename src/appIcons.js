@@ -131,6 +131,23 @@ export const TaskbarAppIcon = GObject.registerClass(
 
       super._init(appInfo.app, iconParams)
 
+      // g-s 49+ AppIcon opens the menu on a long press from any device, so
+      // a left click held a bit too long opened it instead of activating the
+      // app. Keep the long press for touch, where there is no right click.
+      if (Clutter.LongPressGesture)
+        this.get_actions()
+          .filter((a) => a instanceof Clutter.LongPressGesture)
+          .forEach((a) =>
+            a.connect('may-recognize', () => {
+              let type = a.get_point_event(-1)?.type()
+
+              return (
+                type == Clutter.EventType.TOUCH_BEGIN ||
+                type == Clutter.EventType.TOUCH_UPDATE
+              )
+            }),
+          )
+
       this._signalsHandler = new Utils.GlobalSignalsHandler()
       this._timeoutsHandler = new Utils.TimeoutsHandler()
 
