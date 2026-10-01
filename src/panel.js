@@ -518,15 +518,10 @@ export const Panel = GObject.registerClass(
       Main.ctrlAltTabManager.removeGroup(this)
     }
 
-    handleDragOver(source) {
-      if (
-        source == Main.xdndHandler &&
-        Main.overview.shouldToggleByCornerOrButton()
-      ) {
-        this.panelManager.showFocusedAppInOverview(null, true)
-        Main.overview.show()
-      }
-
+    handleDragOver() {
+      // Dragging across the panel must not open the overview: a tab or a
+      // selection moved past it would land the drop in the overview. Icons
+      // still handle drags over themselves.
       return DND.DragMotionResult.CONTINUE
     }
 
