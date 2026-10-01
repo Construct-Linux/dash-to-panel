@@ -262,7 +262,7 @@ export const PanelManager = class {
       ],
       [
         SETTINGS,
-        'changed::intellihide-key-toggle-text',
+        ['changed::intellihide', 'changed::intellihide-key-toggle-text'],
         () => this._setKeyBindings(true),
       ],
       [
@@ -814,7 +814,9 @@ export const PanelManager = class {
     Object.keys(keys).forEach((k) => {
       Utils.removeKeybinding(k)
 
-      if (enable) {
+      // the shortcut only toggles intellihide, so don't take it from other
+      // apps while intellihide is off
+      if (enable && SETTINGS.get_boolean('intellihide')) {
         Utils.addKeybinding(k, SETTINGS, keys[k], Shell.ActionMode.NORMAL)
       }
     })
