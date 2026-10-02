@@ -1,9 +1,7 @@
 # Basic Makefile
 
-UUID = dash-to-panel@jderose9.github.com
 MODULES = src/*.js src/stylesheet.css metadata.json COPYING README.md
 UI_MODULES = ui/*.ui
-IMAGES = ./* ../media/design/svg/dash-to-panel-logo-light.svg
 
 TOLOCALIZE = src/extension.js src/prefs.js src/appIcons.js src/taskbar.js
 MSGSRC = $(wildcard po/*.po)
@@ -18,20 +16,12 @@ endif
 INSTALLNAME = dash-to-panel@jderose9.github.com
 
 # The command line passed variable VERSION is used to set the version string
-# in the metadata and in the generated zip-file. If no VERSION is passed, the
-# version is pulled from the latest git tag and the current commit SHA1 is
-# added to the metadata
-ifdef VERSION
-    ifdef TARGET
-		FILESUFFIX = _v$(VERSION)_$(TARGET)
-	else
-		FILESUFFIX = _v$(VERSION)
-	endif
-else
+# in the metadata. If no VERSION is passed, the version is pulled from the
+# latest git tag and the current commit SHA1 is added to the metadata
+ifndef VERSION
 	LATEST_TAG = $(shell git describe --match "v[0-9]*" --abbrev=0 --tags HEAD)
 	VERSION = $(LATEST_TAG:v%=%)
 	COMMIT = $(shell git rev-parse HEAD)
-	FILESUFFIX =
 endif
 
 all: extension
@@ -81,12 +71,6 @@ endif
 	-rm -fR _build
 	echo done
 
-zip-file: _build
-	cd _build ; \
-	zip -qr "$(UUID)$(FILESUFFIX).zip" .
-	mv _build/$(UUID)$(FILESUFFIX).zip ./
-	-rm -fR _build
-
 _build: all
 	-rm -fR ./_build
 	mkdir -p _build
@@ -95,7 +79,7 @@ _build: all
 	cp $(UI_MODULES) _build/ui
 
 	mkdir -p _build/img
-	cd img ; cp $(IMAGES) ../_build/img/
+	cp img/* _build/img/
 	mkdir -p _build/schemas
 	cp schemas/*.xml _build/schemas/
 	cp schemas/gschemas.compiled _build/schemas/
