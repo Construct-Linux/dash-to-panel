@@ -40,7 +40,6 @@ import * as Pos from './panelPositions.js'
 import * as PanelSettings from './panelSettings.js'
 import * as PanelStyle from './panelStyle.js'
 
-import * as Config from 'resource:///org/gnome/shell/misc/config.js'
 import * as Main from 'resource:///org/gnome/shell/ui/main.js'
 import * as Dash from 'resource:///org/gnome/shell/ui/dash.js'
 import * as DND from 'resource:///org/gnome/shell/ui/dnd.js'
@@ -1260,20 +1259,12 @@ export const Panel = GObject.registerClass(
 
       if (!dragWindow) return Clutter.EVENT_PROPAGATE
 
-      let dragOpArgs = [Meta.GrabOp.MOVING]
-
-      if (Config.PACKAGE_VERSION < '50')
-        dragOpArgs.push(event.get_device(), event.get_event_sequence())
-      else
-        dragOpArgs.push(
-          global.stage
-            .get_context()
-            .get_backend()
-            .get_sprite(global.stage, event),
-        )
-
       dragWindow.begin_grab_op(
-        ...dragOpArgs,
+        Meta.GrabOp.MOVING,
+        global.stage
+          .get_context()
+          .get_backend()
+          .get_sprite(global.stage, event),
         event.get_time(),
         new Graphene.Point({ x: stageX, y: stageY }),
       )
@@ -1611,15 +1602,12 @@ export const Panel = GObject.registerClass(
         !this._timeoutsHandler.getId(T6)
       ) {
         if (direction && scrollAction === 'SWITCH_WORKSPACE') {
-          let args = [global.display, 0]
+          let args = [global.display, 0, event]
 
           //adjust for horizontal workspaces
           if (Utils.DisplayWrapper.getWorkspaceManager().layout_rows === 1) {
             direction = direction == 'up' ? 'left' : 'right'
           }
-
-          //gnome-shell >= 48 needs a third "event" param
-          if (Config.PACKAGE_VERSION >= '48') args.push(event)
 
           let showWsPopup = SETTINGS.get_boolean('scroll-panel-show-ws-popup')
           showWsPopup

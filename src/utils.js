@@ -30,7 +30,6 @@ import Graphene from 'gi://Graphene'
 import Meta from 'gi://Meta'
 import Shell from 'gi://Shell'
 import St from 'gi://St'
-import * as Config from 'resource:///org/gnome/shell/misc/config.js'
 import * as Util from 'resource:///org/gnome/shell/misc/util.js'
 import * as Main from 'resource:///org/gnome/shell/ui/main.js'
 import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js'
@@ -197,14 +196,12 @@ export function createBoxLayout(options) {
 }
 
 export function setBoxLayoutVertical(box, vertical) {
-  if (Config.PACKAGE_VERSION >= '48')
-    // https://mutter.gnome.org/clutter/enum.Orientation.html
-    box.orientation = vertical ? 1 : 0
-  else box.vertical = vertical
+  // https://mutter.gnome.org/clutter/enum.Orientation.html
+  box.orientation = vertical ? 1 : 0
 }
 
 export function getBoxLayoutVertical(box) {
-  return Config.PACKAGE_VERSION >= '48' ? box.orientation == 1 : box.vertical
+  return box.orientation == 1
 }
 
 // This is wrapper to maintain compatibility with GNOME-Shell 3.30+ as well as
@@ -225,20 +222,8 @@ export const DisplayWrapper = {
 
 let unredirectEnabled = true
 export const setDisplayUnredirect = (enable) => {
-  let gsVersion = Config.PACKAGE_VERSION
-
-  if (gsVersion < '50' && !Meta.is_wayland_compositor()) return
-
-  let v48 = gsVersion >= '48'
-
-  if (enable && !unredirectEnabled)
-    v48
-      ? global.compositor.enable_unredirect()
-      : Meta.enable_unredirect_for_display(global.display)
-  else if (!enable && unredirectEnabled)
-    v48
-      ? global.compositor.disable_unredirect()
-      : Meta.disable_unredirect_for_display(global.display)
+  if (enable && !unredirectEnabled) global.compositor.enable_unredirect()
+  else if (!enable && unredirectEnabled) global.compositor.disable_unredirect()
 
   unredirectEnabled = enable
 }
@@ -331,7 +316,7 @@ export const trackChrome = (actor, params) => {
 }
 
 function getChromeParams(params) {
-  if (Config.PACKAGE_VERSION >= '50') delete params.affectsInputRegion
+  delete params.affectsInputRegion
 
   return params
 }

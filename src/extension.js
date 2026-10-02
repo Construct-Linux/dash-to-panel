@@ -21,7 +21,6 @@ import Gio from 'gi://Gio'
 import GLib from 'gi://GLib'
 import Shell from 'gi://Shell'
 
-import * as Config from 'resource:///org/gnome/shell/misc/config.js'
 import * as Main from 'resource:///org/gnome/shell/ui/main.js'
 import { EventEmitter } from 'resource:///org/gnome/shell/misc/signals.js'
 import {
@@ -122,10 +121,10 @@ export default class DashToPanelExtension extends Extension {
         () => {
           Main.sessionMode.hasOverview = this._realHasOverview
 
-          // the extension initialization timing changed in g-s version 50 and the startup animation
-          // is already running when the extension init code is executed. Since there is no way to
-          // prevent the animation from running, hide the overview when it completes
-          if (Config.PACKAGE_VERSION >= '50') Main.overview.hide()
+          // the startup animation is already running when the extension init code is executed.
+          // Since there is no way to prevent the animation from running, hide the overview when
+          // it completes
+          Main.overview.hide()
         },
       )
     }
