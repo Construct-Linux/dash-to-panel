@@ -1472,10 +1472,13 @@ export const Taskbar = class extends EventEmitter {
         if (SETTINGS.get_boolean('show-apps-override-escape')) {
           //override escape key to return to the desktop when entering the overview using the showapps button
           SearchController._onStageKeyPress = function (actor, event) {
-            if (
-              Main.modalCount == 1 &&
-              event.get_key_symbol() === Clutter.KEY_Escape
-            ) {
+            // GNOME Shell 51 calls this without an event: the key is its
+            // stage KeyController's. Earlier versions pass the event.
+            const symbol = event
+              ? event.get_key_symbol()
+              : this._stageKeyController?.get_key()[1]
+
+            if (Main.modalCount == 1 && symbol === Clutter.KEY_Escape) {
               this._searchActive ? this.reset() : Main.overview.hide()
 
               return Clutter.EVENT_STOP
