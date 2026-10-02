@@ -124,7 +124,7 @@ export const PreviewMenu = GObject.registerClass(
         [this._scrollView, 'scroll-event', this._onScrollEvent.bind(this)],
         [this.panel.panelBox, 'style-changed', () => this._updateClip()],
         [
-          Utils.DisplayWrapper.getScreen(),
+          global.display,
           'in-fullscreen-changed',
           () => {
             if (

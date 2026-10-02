@@ -175,8 +175,7 @@ export const Overview = class {
 
     function IsolatedOverview() {
       // These lines take care of Nautilus for icons on Desktop
-      let activeWorkspace =
-        Utils.DisplayWrapper.getWorkspaceManager().get_active_workspace()
+      let activeWorkspace = global.workspace_manager.get_active_workspace()
       let windows = this.get_windows().filter(
         (w) => w.get_workspace().index() == activeWorkspace.index(),
       )
@@ -258,7 +257,7 @@ export const Overview = class {
               (actor, e) => {
                 if (
                   e.type() == Clutter.EventType.KEY_RELEASE &&
-                  e.get_key_symbol() == (Clutter.KEY_Super_L || Clutter.Super_L)
+                  e.get_key_symbol() == Clutter.KEY_Super_L
                 ) {
                   this._endHotkeyPreviewCycle(true)
                 }
@@ -331,14 +330,12 @@ export const Overview = class {
     let keys = []
     let prefixModifiers = Clutter.ModifierType.SUPER_MASK
 
-    //3.32 introduced app hotkeys, disable them to prevent conflicts
-    if (Main.wm._switchToApplication) {
-      for (let i = 1; i < 10; ++i) {
-        Utils.removeKeybinding(GS_SWITCH_HOTKEYS_KEY + i)
+    // disable the shell's own app hotkeys to prevent conflicts
+    for (let i = 1; i < 10; ++i) {
+      Utils.removeKeybinding(GS_SWITCH_HOTKEYS_KEY + i)
 
-        if (bothNumKeys || numRowKeys)
-          Utils.removeKeybinding(GS_OPEN_HOTKEYS_KEY + i)
-      }
+      if (bothNumKeys || numRowKeys)
+        Utils.removeKeybinding(GS_OPEN_HOTKEYS_KEY + i)
     }
 
     if (SETTINGS.get_string('hotkey-prefix-text') == 'SuperAlt')
@@ -396,25 +393,23 @@ export const Overview = class {
       }
     }, this)
 
-    if (Main.wm._switchToApplication) {
-      let gsSettings = new Gio.Settings({
-        schema_id: WindowManager.SHELL_KEYBINDINGS_SCHEMA,
-      })
+    let gsSettings = new Gio.Settings({
+      schema_id: WindowManager.SHELL_KEYBINDINGS_SCHEMA,
+    })
 
-      for (let i = 1; i < 10; ++i) {
+    for (let i = 1; i < 10; ++i) {
+      Utils.addKeybinding(
+        GS_SWITCH_HOTKEYS_KEY + i,
+        gsSettings,
+        Main.wm._switchToApplication.bind(Main.wm),
+      )
+
+      if (shortcutNumKeys == 'BOTH' || shortcutNumKeys == 'NUM_ROW')
         Utils.addKeybinding(
-          GS_SWITCH_HOTKEYS_KEY + i,
+          GS_OPEN_HOTKEYS_KEY + i,
           gsSettings,
-          Main.wm._switchToApplication.bind(Main.wm),
+          Main.wm._openNewApplicationWindow.bind(Main.wm),
         )
-
-        if (shortcutNumKeys == 'BOTH' || shortcutNumKeys == 'NUM_ROW')
-          Utils.addKeybinding(
-            GS_OPEN_HOTKEYS_KEY + i,
-            gsSettings,
-            Main.wm._openNewApplicationWindow.bind(Main.wm),
-          )
-      }
     }
 
     this._hotKeysEnabled = false

@@ -204,25 +204,11 @@ export const Panel = GObject.registerClass(
 
       this.add_child(this.panel)
 
-      if (
-        Main.panel._onButtonPress ||
-        Main.panel._tryDragWindow ||
-        Main.panel._clickGesture
-      ) {
-        this._signalsHandler.add([
-          this.panel,
-          ['button-press-event', 'touch-event'],
-          this._onButtonPress.bind(this),
-        ])
-      }
-
-      if (Main.panel._onKeyPress) {
-        this._signalsHandler.add([
-          this.panel,
-          'key-press-event',
-          Main.panel._onKeyPress.bind(this),
-        ])
-      }
+      this._signalsHandler.add([
+        this.panel,
+        ['button-press-event', 'touch-event'],
+        this._onButtonPress.bind(this),
+      ])
 
       Main.ctrlAltTabManager.addGroup(
         this,
@@ -1460,7 +1446,7 @@ export const Panel = GObject.registerClass(
               SETTINGS.get_int('show-showdesktop-delay'),
               () => {
                 this._hiddenDesktopWorkspace =
-                  Utils.DisplayWrapper.getWorkspaceManager().get_active_workspace()
+                  global.workspace_manager.get_active_workspace()
                 this._toggleWorkspaceWindows(true, this._hiddenDesktopWorkspace)
               },
             ])
@@ -1555,16 +1541,14 @@ export const Panel = GObject.registerClass(
       if (this._restoreWindowList && this._restoreWindowList.length) {
         this._timeoutsHandler.remove(T4)
 
-        let current_workspace =
-          Utils.DisplayWrapper.getWorkspaceManager().get_active_workspace()
+        let current_workspace = global.workspace_manager.get_active_workspace()
         let windows = current_workspace.list_windows()
         this._restoreWindowList.forEach(function (w) {
           if (windows.indexOf(w) > -1) Main.activateWindow(w)
         })
         this._restoreWindowList = null
       } else {
-        let current_workspace =
-          Utils.DisplayWrapper.getWorkspaceManager().get_active_workspace()
+        let current_workspace = global.workspace_manager.get_active_workspace()
         let windows = current_workspace.list_windows().filter(function (w) {
           return w.showing_on_its_workspace() && !w.skip_taskbar
         })
@@ -1605,7 +1589,7 @@ export const Panel = GObject.registerClass(
           let args = [global.display, 0, event]
 
           //adjust for horizontal workspaces
-          if (Utils.DisplayWrapper.getWorkspaceManager().layout_rows === 1) {
+          if (global.workspace_manager.layout_rows === 1) {
             direction = direction == 'up' ? 'left' : 'right'
           }
 

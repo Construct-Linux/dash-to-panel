@@ -204,22 +204,6 @@ export function getBoxLayoutVertical(box) {
   return box.orientation == 1
 }
 
-// This is wrapper to maintain compatibility with GNOME-Shell 3.30+ as well as
-// previous versions.
-export const DisplayWrapper = {
-  getScreen() {
-    return global.screen || global.display
-  },
-
-  getWorkspaceManager() {
-    return global.screen || global.workspace_manager
-  },
-
-  getMonitorManager() {
-    return global.screen || global.backend.get_monitor_manager()
-  },
-}
-
 let unredirectEnabled = true
 export const setDisplayUnredirect = (enable) => {
   if (enable && !unredirectEnabled) global.compositor.enable_unredirect()
@@ -254,15 +238,15 @@ export function getOverviewWorkspaces() {
 }
 
 export const getCurrentWorkspace = function () {
-  return DisplayWrapper.getWorkspaceManager().get_active_workspace()
+  return global.workspace_manager.get_active_workspace()
 }
 
 export const getWorkspaceByIndex = function (index) {
-  return DisplayWrapper.getWorkspaceManager().get_workspace_by_index(index)
+  return global.workspace_manager.get_workspace_by_index(index)
 }
 
 export const getWorkspaceCount = function () {
-  return DisplayWrapper.getWorkspaceManager().n_workspaces
+  return global.workspace_manager.n_workspaces
 }
 
 export const getStageTheme = function () {
@@ -633,11 +617,9 @@ export const ensureActorVisibleInScrollView = function (
 /**
  *  ColorUtils is adapted from https://github.com/micheleg/dash-to-dock
  */
-let colorNs = Clutter.Color ? Clutter : Cogl
-
 export const ColorUtils = {
-  color_from_string: colorNs.color_from_string,
-  Color: colorNs.Color,
+  color_from_string: Cogl.color_from_string,
+  Color: Cogl.Color,
 
   colorLuminance(r, g, b, dlum) {
     // Darken or brighten color by a fraction dlum

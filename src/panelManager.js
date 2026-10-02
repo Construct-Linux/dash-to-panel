@@ -114,8 +114,7 @@ export const PanelManager = class {
 
     this._updatePanelElementPositions()
 
-    if (Main.panel._clickGesture && !keepGsTopPanel)
-      Main.panel._clickGesture.set_enabled(false)
+    if (!keepGsTopPanel) Main.panel._clickGesture.set_enabled(false)
 
     if (reset) return
 
@@ -145,12 +144,10 @@ export const PanelManager = class {
       () => Main.layoutManager._updateHotCorners(),
     )
 
-    if (Main.layoutManager._interfaceSettings) {
-      this._enableHotCornersId = Main.layoutManager._interfaceSettings.connect(
-        'changed::enable-hot-corners',
-        () => Main.layoutManager._updateHotCorners(),
-      )
-    }
+    this._enableHotCornersId = Main.layoutManager._interfaceSettings.connect(
+      'changed::enable-hot-corners',
+      () => Main.layoutManager._updateHotCorners(),
+    )
 
     this._oldUpdateWorkspacesViews =
       Main.overview._overview._controls._workspacesDisplay._updateWorkspacesViews
@@ -277,7 +274,7 @@ export const PanelManager = class {
         },
       ],
       [
-        Utils.DisplayWrapper.getMonitorManager(),
+        global.backend.get_monitor_manager(),
         'monitors-changed',
         async () => {
           if (Main.layoutManager.primaryMonitor) {
@@ -379,7 +376,7 @@ export const PanelManager = class {
       )
     }
 
-    if (Main.panel._clickGesture) Main.panel._clickGesture.set_enabled(true)
+    Main.panel._clickGesture.set_enabled(true)
 
     if (reset) return
 
@@ -586,8 +583,7 @@ export const PanelManager = class {
       Utils.getOverviewWorkspaces().forEach((w) => {
         let metaWindows = []
         let metaWorkspace =
-          w.metaWorkspace ||
-          Utils.DisplayWrapper.getWorkspaceManager().get_active_workspace()
+          w.metaWorkspace || global.workspace_manager.get_active_workspace()
 
         w._container.layout_manager._windows.forEach((info, preview) =>
           preview.destroy(),

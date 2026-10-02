@@ -130,22 +130,21 @@ export const TaskbarAppIcon = GObject.registerClass(
 
       super._init(appInfo.app, iconParams)
 
-      // g-s 49+ AppIcon opens the menu on a long press from any device, so
+      // AppIcon opens the menu on a long press from any device, so
       // a left click held a bit too long opened it instead of activating the
       // app. Keep the long press for touch, where there is no right click.
-      if (Clutter.LongPressGesture)
-        this.get_actions()
-          .filter((a) => a instanceof Clutter.LongPressGesture)
-          .forEach((a) =>
-            a.connect('may-recognize', () => {
-              let type = a.get_point_event(-1)?.type()
+      this.get_actions()
+        .filter((a) => a instanceof Clutter.LongPressGesture)
+        .forEach((a) =>
+          a.connect('may-recognize', () => {
+            let type = a.get_point_event(-1)?.type()
 
-              return (
-                type == Clutter.EventType.TOUCH_BEGIN ||
-                type == Clutter.EventType.TOUCH_UPDATE
-              )
-            }),
-          )
+            return (
+              type == Clutter.EventType.TOUCH_BEGIN ||
+              type == Clutter.EventType.TOUCH_UPDATE
+            )
+          }),
+        )
 
       this._signalsHandler = new Utils.GlobalSignalsHandler()
       this._timeoutsHandler = new Utils.TimeoutsHandler()
@@ -262,14 +261,14 @@ export const TaskbarAppIcon = GObject.registerClass(
       if (!this.window) {
         if (SETTINGS.get_boolean('isolate-monitors')) {
           this._signalsHandler.add([
-            Utils.DisplayWrapper.getScreen(),
+            global.display,
             ['window-entered-monitor', 'window-left-monitor'],
             this.onWindowEnteredOrLeft.bind(this),
           ])
         }
 
         this._signalsHandler.add([
-          Utils.DisplayWrapper.getScreen(),
+          global.display,
           'in-fullscreen-changed',
           () => {
             if (
@@ -1764,7 +1763,7 @@ export function minimizeWindow(app, param, monitor) {
   // Param true make all app windows minimize
   let windows = getInterestingWindows(app, monitor)
   let current_workspace =
-    Utils.DisplayWrapper.getWorkspaceManager().get_active_workspace()
+    global.workspace_manager.get_active_workspace()
   for (let i = 0; i < windows.length; i++) {
     let w = windows[i]
     if (
@@ -1790,7 +1789,7 @@ export function activateAllWindows(app, monitor) {
   let w = windows[0]
   Main.activateWindow(w)
   let activeWorkspace =
-    Utils.DisplayWrapper.getWorkspaceManager().get_active_workspace_index()
+    global.workspace_manager.get_active_workspace_index()
 
   if (windows.length <= 0) return
 
@@ -1921,7 +1920,7 @@ export function getIconPadding(dtpPanel) {
 }
 
 /**
- * Extend AppMenu (AppIconMenu for pre gnome 41)
+ * Extend AppMenu
  *
  * - hide 'App Details' according to setting
  * - show windows header only if show-window-previews is disabled

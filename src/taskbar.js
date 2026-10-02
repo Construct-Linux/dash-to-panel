@@ -365,7 +365,7 @@ export const Taskbar = class extends EventEmitter {
         () => this._connectWorkspaceSignals(),
       ],
       [
-        Utils.DisplayWrapper.getScreen(),
+        global.display,
         ['window-entered-monitor', 'window-left-monitor'],
         () => {
           if (SETTINGS.get_boolean('isolate-monitors')) {
@@ -717,7 +717,7 @@ export const Taskbar = class extends EventEmitter {
     this._disconnectWorkspaceSignals()
 
     this._lastWorkspace =
-      Utils.DisplayWrapper.getWorkspaceManager().get_active_workspace()
+      global.workspace_manager.get_active_workspace()
 
     this._workspaceWindowAddedId = this._lastWorkspace.connect(
       'window-added',
@@ -1462,21 +1462,15 @@ export const Taskbar = class extends EventEmitter {
     // has already performed the desired action.
     let selector = SearchController
 
-    if (
-      selector._showAppsButton &&
-      selector._showAppsButton.checked !== this.showAppsButton.checked
-    ) {
+    if (selector._showAppsButton.checked !== this.showAppsButton.checked) {
       // find visible view
 
       if (this.showAppsButton.checked) {
         if (SETTINGS.get_boolean('show-apps-override-escape')) {
           //override escape key to return to the desktop when entering the overview using the showapps button
-          SearchController._onStageKeyPress = function (actor, event) {
-            // GNOME Shell 51 calls this without an event: the key is its
-            // stage KeyController's. Earlier versions pass the event.
-            const symbol = event
-              ? event.get_key_symbol()
-              : this._stageKeyController?.get_key()[1]
+          SearchController._onStageKeyPress = function () {
+            // the key is the stage KeyController's, there is no event
+            const [, symbol] = this._stageKeyController.get_key()
 
             if (Main.modalCount == 1 && symbol === Clutter.KEY_Escape) {
               this._searchActive ? this.reset() : Main.overview.hide()
@@ -1484,11 +1478,7 @@ export const Taskbar = class extends EventEmitter {
               return Clutter.EVENT_STOP
             }
 
-            return Object.getPrototypeOf(this)._onStageKeyPress.call(
-              this,
-              actor,
-              event,
-            )
+            return Object.getPrototypeOf(this)._onStageKeyPress.call(this)
           }
 
           let overviewHiddenId = Main.overview.connect('hidden', () => {
