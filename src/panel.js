@@ -1608,7 +1608,12 @@ export const Panel = GObject.registerClass(
               : 1
             : event.get_scroll_delta()[1]
 
-          // same step + OSD as scrolling the indicator itself (51 volume.js:455-462)
+          // the indicator's ScrollController follows the physical direction,
+          // so natural scrolling does not flip the volume (51 volume.js:441-443)
+          if (event.get_scroll_flags() & Clutter.ScrollFlags.INVERTED)
+            delta = -delta
+
+          // same step + OSD as scrolling the indicator itself (51 volume.js:458-465)
           indicator._handleScroll(indicator.quickSettingsItems[0], delta)
         } else {
           return
