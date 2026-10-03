@@ -23,7 +23,6 @@
 import Adw from 'gi://Adw'
 import GdkPixbuf from 'gi://GdkPixbuf'
 import Gio from 'gi://Gio'
-import GioUnix from 'gi://GioUnix'
 import GLib from 'gi://GLib'
 import GObject from 'gi://GObject'
 import Gtk from 'gi://Gtk'
@@ -3882,24 +3881,27 @@ const Preferences = class {
           (filename) => {
             if (filename && GLib.file_test(filename, GLib.FileTest.EXISTS)) {
               let settingsFile = Gio.File.new_for_path(filename)
-              let [, , stdin, stdout, stderr] = GLib.spawn_async_with_pipes(
-                null,
+              // GSubprocess reaps dconf when it exits
+              let proc = Gio.Subprocess.new(
                 ['dconf', 'load', SCHEMA_PATH],
-                null,
-                GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
-                null,
+                Gio.SubprocessFlags.STDIN_PIPE,
               )
 
-              stdin = new GioUnix.OutputStream({ fd: stdin, close_fd: true })
-              GLib.close(stdout)
-              GLib.close(stderr)
-
-              stdin.splice(
-                settingsFile.read(null),
-                Gio.OutputStreamSpliceFlags.CLOSE_SOURCE |
-                  Gio.OutputStreamSpliceFlags.CLOSE_TARGET,
-                null,
-              )
+              proc
+                .get_stdin_pipe()
+                .splice(
+                  settingsFile.read(null),
+                  Gio.OutputStreamSpliceFlags.CLOSE_SOURCE |
+                    Gio.OutputStreamSpliceFlags.CLOSE_TARGET,
+                  null,
+                )
+              proc.wait_check_async(null, (p, res) => {
+                try {
+                  p.wait_check_finish(res)
+                } catch (e) {
+                  console.log('Error importing settings: ' + e.message)
+                }
+              })
             }
           },
         )
