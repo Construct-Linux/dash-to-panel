@@ -317,20 +317,6 @@ export const mergeObjects = function (main, bck) {
   return main
 }
 
-export const addChrome = (actor, params) => {
-  Main.layoutManager.addChrome(actor, getChromeParams(params))
-}
-
-export const trackChrome = (actor, params) => {
-  Main.layoutManager.trackChrome(actor, getChromeParams(params))
-}
-
-function getChromeParams(params) {
-  delete params.affectsInputRegion
-
-  return params
-}
-
 export const getTrackedActorData = (actor) => {
   let trackedIndex = Main.layoutManager._findActor(actor)
 

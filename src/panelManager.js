@@ -346,7 +346,7 @@ export const PanelManager = class {
         delete p.panelBox._dtpIndex
 
         p.clipContainer.remove_child(p.panelBox)
-        Utils.addChrome(p.panelBox, {
+        Main.layoutManager.addChrome(p.panelBox, {
           affectsStruts: true,
           trackFullscreen: true,
         })
@@ -661,7 +661,7 @@ export const PanelManager = class {
       Main.layoutManager.removeChrome(panelBox)
     }
 
-    Utils.addChrome(clipContainer, { affectsInputRegion: false })
+    Main.layoutManager.addChrome(clipContainer)
     clipContainer.add_child(panelBox)
 
     panel = new Panel.Panel(
@@ -678,12 +678,9 @@ export const PanelManager = class {
     panelBox.set_position(0, 0)
     panelBox.set_width(-1)
 
-    Utils.trackChrome(panel, {
-      affectsInputRegion: true,
-      affectsStruts: false,
-    })
+    Main.layoutManager.trackChrome(panel, { affectsStruts: false })
 
-    Utils.trackChrome(panelBox, {
+    Main.layoutManager.trackChrome(panelBox, {
       trackFullscreen: true,
       affectsStruts: true,
     })
