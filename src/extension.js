@@ -41,6 +41,7 @@ let ubuntuDockDelayId = 0
 
 export let DTP_EXTENSION = null
 export let SETTINGS = null
+export let SETTINGS_CACHE = null
 export let DESKTOPSETTINGS = null
 export let TERMINALSETTINGS = null
 export let NOTIFICATIONSSETTINGS = null
@@ -61,6 +62,7 @@ export default class DashToPanelExtension extends Extension {
   async enable() {
     DTP_EXTENSION = this
     SETTINGS = this.getSettings('org.gnome.shell.extensions.dash-to-panel')
+    SETTINGS_CACHE = new Utils.SettingsCache(SETTINGS)
     DESKTOPSETTINGS = new Gio.Settings({
       schema_id: 'org.gnome.desktop.interface',
     })
@@ -164,8 +166,11 @@ export default class DashToPanelExtension extends Extension {
     panelManager.disable()
     PanelSettings.clearCache()
 
+    SETTINGS_CACHE.destroy()
+
     DTP_EXTENSION = null
     SETTINGS = null
+    SETTINGS_CACHE = null
     DESKTOPSETTINGS = null
     TERMINALSETTINGS = null
     panelManager = null

@@ -46,6 +46,7 @@ import * as Taskbar from './taskbar.js'
 import {
   DTP_EXTENSION,
   SETTINGS,
+  SETTINGS_CACHE,
   DESKTOPSETTINGS,
   TERMINALSETTINGS,
   EXTENSION_PATH,
@@ -175,7 +176,7 @@ export const TaskbarAppIcon = GObject.registerClass(
       }
 
       this._dot.set_width(0)
-      this._isGroupApps = SETTINGS.get_boolean('group-apps')
+      this._isGroupApps = SETTINGS_CACHE.get('group-apps')
 
       this._container = new St.Widget({
         style_class: 'dtp-container',
@@ -259,7 +260,7 @@ export const TaskbarAppIcon = GObject.registerClass(
       )
 
       if (!this.window) {
-        if (SETTINGS.get_boolean('isolate-monitors')) {
+        if (SETTINGS_CACHE.get('isolate-monitors')) {
           this._signalsHandler.add([
             global.display,
             ['window-entered-monitor', 'window-left-monitor'],
@@ -429,9 +430,9 @@ export const TaskbarAppIcon = GObject.registerClass(
 
     shouldShowTooltip() {
       if (
-        !SETTINGS.get_boolean('show-tooltip') ||
+        !SETTINGS_CACHE.get('show-tooltip') ||
         (!this.isLauncher &&
-          SETTINGS.get_boolean('show-window-previews') &&
+          SETTINGS_CACHE.get('show-window-previews') &&
           this.getAppIconInterestingWindows().length > 0)
       ) {
         return false
@@ -447,7 +448,7 @@ export const TaskbarAppIcon = GObject.registerClass(
 
     _onAppIconHoverChanged() {
       if (
-        !SETTINGS.get_boolean('show-window-previews') ||
+        !SETTINGS_CACHE.get('show-window-previews') ||
         (!this.window && !this._nWindows)
       ) {
         return
@@ -529,7 +530,7 @@ export const TaskbarAppIcon = GObject.registerClass(
     }
 
     _onAnimateAppiconHoverChanged() {
-      if (SETTINGS.get_boolean('animate-appicon-hover')) {
+      if (SETTINGS_CACHE.get('animate-appicon-hover')) {
         this._container.add_style_class_name('animate-appicon-hover')
 
         // Workaround to prevent scaled icon from being ugly when it is animated on hover.
@@ -568,13 +569,13 @@ export const TaskbarAppIcon = GObject.registerClass(
     }
 
     _onAppIconHoverHighlightChanged() {
-      const background_color = SETTINGS.get_string(
+      const background_color = SETTINGS_CACHE.get(
         'highlight-appicon-hover-background-color',
       )
-      const pressed_color = SETTINGS.get_string(
+      const pressed_color = SETTINGS_CACHE.get(
         'highlight-appicon-pressed-background-color',
       )
-      const border_radius = SETTINGS.get_int(
+      const border_radius = SETTINGS_CACHE.get(
         'highlight-appicon-hover-border-radius',
       )
 
@@ -585,7 +586,7 @@ export const TaskbarAppIcon = GObject.registerClass(
       this._appicon_hoverstyle = `background-color: ${background_color}; ${br}`
       this._appicon_pressedstyle = `background-color: ${pressed_color}; ${br}`
 
-      if (SETTINGS.get_boolean('highlight-appicon-hover')) {
+      if (SETTINGS_CACHE.get('highlight-appicon-hover')) {
         this._container.remove_style_class_name('no-highlight')
       } else {
         this._container.add_style_class_name('no-highlight')
@@ -618,7 +619,7 @@ export const TaskbarAppIcon = GObject.registerClass(
     }
 
     _onMouseScroll(actor, event) {
-      let scrollAction = SETTINGS.get_string('scroll-icon-action')
+      let scrollAction = SETTINGS_CACHE.get('scroll-icon-action')
 
       if (scrollAction === 'PASS_THROUGH') {
         return this.dtpPanel._onPanelMouseScroll(actor, event)
@@ -634,7 +635,7 @@ export const TaskbarAppIcon = GObject.registerClass(
       if (direction && !this._timeoutsHandler.getId(T2)) {
         this._timeoutsHandler.add([
           T2,
-          SETTINGS.get_int('scroll-icon-delay'),
+          SETTINGS_CACHE.get('scroll-icon-delay'),
           () => {},
         ])
 
@@ -674,7 +675,7 @@ export const TaskbarAppIcon = GObject.registerClass(
             // being removed from the panel
             this._drawRunningIndicator(
               this._focusedDots,
-              SETTINGS.get_string('dot-style-focused'),
+              SETTINGS_CACHE.get('dot-style-focused'),
               true,
             )
         })
@@ -683,7 +684,7 @@ export const TaskbarAppIcon = GObject.registerClass(
           if (!this._dashItemContainer.animatingOut)
             this._drawRunningIndicator(
               this._unfocusedDots,
-              SETTINGS.get_string('dot-style-unfocused'),
+              SETTINGS_CACHE.get('dot-style-unfocused'),
               false,
             )
         })
@@ -706,12 +707,12 @@ export const TaskbarAppIcon = GObject.registerClass(
     }
 
     _resetDots(ignoreSizeReset) {
-      let position = SETTINGS.get_string('dot-position')
+      let position = SETTINGS_CACHE.get('dot-position')
       let isHorizontalDots =
         position == DOT_POSITION.TOP || position == DOT_POSITION.BOTTOM
       let sizeProp = isHorizontalDots ? 'width' : 'height'
-      let focusedDotStyle = SETTINGS.get_string('dot-style-focused')
-      let unfocusedDotStyle = SETTINGS.get_string('dot-style-unfocused')
+      let focusedDotStyle = SETTINGS_CACHE.get('dot-style-focused')
+      let unfocusedDotStyle = SETTINGS_CACHE.get('dot-style-unfocused')
 
       this._focusedIsWide = this._isWideDotStyle(focusedDotStyle)
       this._unfocusedIsWide = this._isWideDotStyle(unfocusedDotStyle)
@@ -742,15 +743,15 @@ export const TaskbarAppIcon = GObject.registerClass(
 
     _updateWindowTitleStyle() {
       if (this._windowTitle) {
-        let useFixedWidth = SETTINGS.get_boolean('group-apps-use-fixed-width')
-        let fontWeight = SETTINGS.get_string('group-apps-label-font-weight')
+        let useFixedWidth = SETTINGS_CACHE.get('group-apps-use-fixed-width')
+        let fontWeight = SETTINGS_CACHE.get('group-apps-label-font-weight')
         let fontScale = DESKTOPSETTINGS.get_double('text-scaling-factor')
         let fontColor = this.window.minimized
-          ? SETTINGS.get_string('group-apps-label-font-color-minimized')
-          : SETTINGS.get_string('group-apps-label-font-color')
+          ? SETTINGS_CACHE.get('group-apps-label-font-color-minimized')
+          : SETTINGS_CACHE.get('group-apps-label-font-color')
         let scaleFactor = Utils.getScaleFactor()
         let maxLabelWidth =
-          SETTINGS.get_int('group-apps-label-max-width') * scaleFactor
+          SETTINGS_CACHE.get('group-apps-label-max-width') * scaleFactor
         let variableWidth =
           !useFixedWidth ||
           this.dtpPanel.geom.vertical ||
@@ -770,7 +771,7 @@ export const TaskbarAppIcon = GObject.registerClass(
 
         this._windowTitle.set_style(
           'font-size: ' +
-            SETTINGS.get_int('group-apps-label-font-size') * fontScale +
+            SETTINGS_CACHE.get('group-apps-label-font-size') * fontScale +
             'px;' +
             'font-weight: ' +
             fontWeight +
@@ -800,17 +801,17 @@ export const TaskbarAppIcon = GObject.registerClass(
       let inlineStyle = 'margin: 0;'
 
       if (
-        SETTINGS.get_boolean('focus-highlight') &&
+        SETTINGS_CACHE.get('focus-highlight') &&
         this._checkIfFocusedApp() &&
         !this.isLauncher &&
         (!this.window || isFocused) &&
         !this._isThemeProvidingIndicator() &&
         this._checkIfMonitorHasFocus()
       ) {
-        let focusedDotStyle = SETTINGS.get_string('dot-style-focused')
-        let pos = SETTINGS.get_string('dot-position')
+        let focusedDotStyle = SETTINGS_CACHE.get('dot-style-focused')
+        let pos = SETTINGS_CACHE.get('dot-position')
         let highlightMargin = this._focusedIsWide
-          ? SETTINGS.get_int('dot-size')
+          ? SETTINGS_CACHE.get('dot-size')
           : 0
 
         if (!this.window) {
@@ -854,7 +855,7 @@ export const TaskbarAppIcon = GObject.registerClass(
           'background-color: ' +
           cssHexTocssRgba(
             highlightColor,
-            SETTINGS.get_int('focus-highlight-opacity') * 0.01,
+            SETTINGS_CACHE.get('focus-highlight-opacity') * 0.01,
           ) +
           ';'
         inlineStyle += this._appicon_normalstyle
@@ -872,8 +873,8 @@ export const TaskbarAppIcon = GObject.registerClass(
     _checkIfMonitorHasFocus() {
       return (
         global.display.focus_window &&
-        (!SETTINGS.get_boolean('multi-monitors') || // only check same monitor index if multi window is enabled.
-          !SETTINGS.get_boolean('isolate-monitors') ||
+        (!SETTINGS_CACHE.get('multi-monitors') || // only check same monitor index if multi window is enabled.
+          !SETTINGS_CACHE.get('isolate-monitors') ||
           global.display.focus_window.get_monitor() ===
             this.dtpPanel.monitor.index)
       )
@@ -881,7 +882,7 @@ export const TaskbarAppIcon = GObject.registerClass(
 
     _setAppIconPadding() {
       const padding = getIconPadding(this.dtpPanel)
-      const margin = SETTINGS.get_int('appicon-margin')
+      const margin = SETTINGS_CACHE.get('appicon-margin')
       let vertical = this.dtpPanel.geom.vertical
 
       this.set_style(
@@ -891,7 +892,7 @@ export const TaskbarAppIcon = GObject.registerClass(
     }
 
     _setAppIconStyle() {
-      let appIconStyle = SETTINGS.get_string('appicon-style')
+      let appIconStyle = SETTINGS_CACHE.get('appicon-style')
 
       if (appIconStyle === APPICON_STYLE.SYMBOLIC) {
         this.add_style_class_name('symbolic-icon-style')
@@ -949,7 +950,7 @@ export const TaskbarAppIcon = GObject.registerClass(
         T4,
         0,
         () => {
-          if (SETTINGS.get_boolean('isolate-workspaces')) this._updateWindows()
+          if (SETTINGS_CACHE.get('isolate-workspaces')) this._updateWindows()
 
           this._displayProperIndicator()
         },
@@ -966,7 +967,7 @@ export const TaskbarAppIcon = GObject.registerClass(
 
     _displayProperIndicator() {
       let isFocused = this._isFocusedWindow()
-      let position = SETTINGS.get_string('dot-position')
+      let position = SETTINGS_CACHE.get('dot-position')
       let isHorizontalDots =
         position == DOT_POSITION.TOP || position == DOT_POSITION.BOTTOM
 
@@ -975,7 +976,7 @@ export const TaskbarAppIcon = GObject.registerClass(
       if (!this._isGroupApps) {
         if (
           this.window &&
-          (SETTINGS.get_boolean('group-apps-underline-unfocused') || isFocused)
+          (SETTINGS_CACHE.get('group-apps-underline-unfocused') || isFocused)
         ) {
           let align =
             Clutter.ActorAlign[
@@ -1038,7 +1039,7 @@ export const TaskbarAppIcon = GObject.registerClass(
         // AND (going from a wide style to a narrow style indicator or vice-versa
         // OR going from an open app to a closed app or vice versa)
         let animate =
-          SETTINGS.get_boolean('animate-app-switch') &&
+          SETTINGS_CACHE.get('animate-app-switch') &&
           (this._focusedIsWide != this._unfocusedIsWide ||
             this._focusedDots[sizeProp] != newUnfocusedDotsSize ||
             this._unfocusedDots[sizeProp] != newFocusedDotsSize)
@@ -1145,8 +1146,8 @@ export const TaskbarAppIcon = GObject.registerClass(
 
       if (button && button == 2) {
         if (modifiers & Clutter.ModifierType.SHIFT_MASK)
-          buttonAction = SETTINGS.get_string('shift-middle-click-action')
-        else buttonAction = SETTINGS.get_string('middle-click-action')
+          buttonAction = SETTINGS_CACHE.get('shift-middle-click-action')
+        else buttonAction = SETTINGS_CACHE.get('middle-click-action')
       }
       // fixed issue #1676 by checking for button 0 or 1 to also handle touchscreen
       // input, probably not the proper fix as i'm not aware button 0 should exist
@@ -1158,13 +1159,13 @@ export const TaskbarAppIcon = GObject.registerClass(
         this.lastClick = now
 
         if (modifiers & Clutter.ModifierType.SHIFT_MASK)
-          buttonAction = SETTINGS.get_string('shift-click-action')
-        else buttonAction = SETTINGS.get_string('click-action')
+          buttonAction = SETTINGS_CACHE.get('shift-click-action')
+        else buttonAction = SETTINGS_CACHE.get('click-action')
       }
 
       let closePreview = () =>
         this._previewMenu.close(
-          SETTINGS.get_boolean('window-preview-hide-immediate-click'),
+          SETTINGS_CACHE.get('window-preview-hide-immediate-click'),
         )
       let appCount = this.getAppIconInterestingWindows().length
       let previewedAppIcon = this._previewMenu.getCurrentAppIcon()
@@ -1320,7 +1321,7 @@ export const TaskbarAppIcon = GObject.registerClass(
 
     _launchNewInstance(ctrlPressed) {
       let maybeAnimate = () =>
-        SETTINGS.get_boolean('animate-window-launch') && this.animateLaunch()
+        SETTINGS_CACHE.get('animate-window-launch') && this.animateLaunch()
 
       if (
         (ctrlPressed || this.app.state == Shell.AppState.RUNNING) &&
@@ -1363,7 +1364,7 @@ export const TaskbarAppIcon = GObject.registerClass(
     }
 
     _getRunningIndicatorSize() {
-      return SETTINGS.get_int('dot-size') * Utils.getScaleFactor()
+      return SETTINGS_CACHE.get('dot-size') * Utils.getScaleFactor()
     }
 
     _getRunningIndicatorColor(isFocused) {
@@ -1375,7 +1376,7 @@ export const TaskbarAppIcon = GObject.registerClass(
         alpha: 255,
       })
 
-      if (SETTINGS.get_boolean('dot-color-dominant')) {
+      if (SETTINGS_CACHE.get('dot-color-dominant')) {
         let dce = new Utils.DominantColorExtractor(this.app)
         let palette = dce._getColorPalette()
         if (palette) {
@@ -1388,14 +1389,14 @@ export const TaskbarAppIcon = GObject.registerClass(
           // theme didn't provide one, use a default
           if (color.alpha == 0) color = fallbackColor
         }
-      } else if (SETTINGS.get_boolean('dot-color-override')) {
+      } else if (SETTINGS_CACHE.get('dot-color-override')) {
         let dotColorSettingPrefix = 'dot-color-'
 
-        if (!isFocused && SETTINGS.get_boolean('dot-color-unfocused-different'))
+        if (!isFocused && SETTINGS_CACHE.get('dot-color-unfocused-different'))
           dotColorSettingPrefix = 'dot-color-unfocused-'
 
         color = Utils.ColorUtils.color_from_string(
-          SETTINGS.get_string(
+          SETTINGS_CACHE.get(
             dotColorSettingPrefix + (this._getRunningIndicatorCount() || 1),
           ),
         )[1]
@@ -1413,12 +1414,12 @@ export const TaskbarAppIcon = GObject.registerClass(
     }
 
     _getFocusHighlightColor() {
-      if (SETTINGS.get_boolean('focus-highlight-dominant')) {
+      if (SETTINGS_CACHE.get('focus-highlight-dominant')) {
         let dce = new Utils.DominantColorExtractor(this.app)
         let palette = dce._getColorPalette()
         if (palette) return palette.original
       }
-      return SETTINGS.get_string('focus-highlight-color')
+      return SETTINGS_CACHE.get('focus-highlight-color')
     }
 
     _drawRunningIndicator(area, type, isFocused) {
@@ -1428,7 +1429,7 @@ export const TaskbarAppIcon = GObject.registerClass(
         return
       }
 
-      let position = SETTINGS.get_string('dot-position')
+      let position = SETTINGS_CACHE.get('dot-position')
       let isHorizontalDots =
         position == DOT_POSITION.TOP || position == DOT_POSITION.BOTTOM
       let bodyColor = this._getRunningIndicatorColor(isFocused)
@@ -1647,7 +1648,7 @@ export const TaskbarAppIcon = GObject.registerClass(
 
       if (!state && !this._notificationsCount) return
 
-      if (SETTINGS.get_boolean('progress-show-count')) {
+      if (SETTINGS_CACHE.get('progress-show-count')) {
         this.iconAnimator[`${state?.urgent ? 'add' : 'remove'}Animation`](
           this.icon._iconBin,
           'dance',
@@ -1885,7 +1886,7 @@ export function getInterestingWindows(app, monitor, isolateMonitors) {
 
   // When using workspace or monitor isolation, we filter out windows
   // that are not in the current workspace or on the same monitor as the appicon
-  if (SETTINGS.get_boolean('isolate-workspaces'))
+  if (SETTINGS_CACHE.get('isolate-workspaces'))
     windows = windows.filter(function (w) {
       return (
         w.get_workspace() && w.get_workspace() == Utils.getCurrentWorkspace()
@@ -1894,9 +1895,9 @@ export function getInterestingWindows(app, monitor, isolateMonitors) {
 
   if (
     monitor &&
-    (isolateMonitors || SETTINGS.get_boolean('isolate-monitors')) &&
-    (SETTINGS.get_boolean('multi-monitors') ||
-      SETTINGS.get_boolean('isolate-monitors-with-single-panel'))
+    (isolateMonitors || SETTINGS_CACHE.get('isolate-monitors')) &&
+    (SETTINGS_CACHE.get('multi-monitors') ||
+      SETTINGS_CACHE.get('isolate-monitors-with-single-panel'))
   ) {
     windows = windows.filter(function (w) {
       return w.get_monitor() == monitor.index
@@ -1917,7 +1918,7 @@ export function cssHexTocssRgba(cssHex, opacity) {
 
 export function getIconPadding(dtpPanel) {
   let panelSize = dtpPanel.geom.innerSize
-  let padding = SETTINGS.get_int('appicon-padding')
+  let padding = SETTINGS_CACHE.get('appicon-padding')
   let availSize = panelSize - Taskbar.MIN_ICON_SIZE - (panelSize % 2)
 
   if (padding * 2 > availSize) {
@@ -2010,7 +2011,7 @@ export class TaskbarSecondaryMenu extends AppMenu.AppMenu {
 
     this._detailsItem.visible =
       gnomeSoftwareIsInstalled &&
-      SETTINGS.get_boolean('secondarymenu-contains-showdetails')
+      SETTINGS_CACHE.get('secondarymenu-contains-showdetails')
   }
 }
 
@@ -2129,7 +2130,7 @@ export const ShowAppsIconWrapper = class extends EventEmitter {
     this.realShowAppsIcon._dtpPanel = dtpPanel
     Taskbar.extendDashItemContainer(this.realShowAppsIcon)
 
-    let customIconPath = SETTINGS.get_string('show-apps-icon-file')
+    let customIconPath = SETTINGS_CACHE.get('show-apps-icon-file')
 
     this.realShowAppsIcon.icon.createIcon = function (size) {
       this._iconActor = new St.Icon({
@@ -2151,7 +2152,7 @@ export const ShowAppsIconWrapper = class extends EventEmitter {
     this._changedShowAppsIconId = SETTINGS.connect(
       'changed::show-apps-icon-file',
       () => {
-        customIconPath = SETTINGS.get_string('show-apps-icon-file')
+        customIconPath = SETTINGS_CACHE.get('show-apps-icon-file')
         this.realShowAppsIcon.icon._createIconTexture(
           this.realShowAppsIcon.icon.iconSize,
         )
@@ -2200,7 +2201,7 @@ export const ShowAppsIconWrapper = class extends EventEmitter {
 
   setShowAppsPadding() {
     let padding = getIconPadding(this.realShowAppsIcon._dtpPanel)
-    let sidePadding = SETTINGS.get_int('show-apps-icon-side-padding')
+    let sidePadding = SETTINGS_CACHE.get('show-apps-icon-side-padding')
     let isVertical = this.realShowAppsIcon._dtpPanel.geom.vertical
 
     this.actor.set_style(
@@ -2254,7 +2255,7 @@ export const ShowAppsIconWrapper = class extends EventEmitter {
 
   shouldShowTooltip() {
     return (
-      SETTINGS.get_boolean('show-tooltip') &&
+      SETTINGS_CACHE.get('show-tooltip') &&
       this.actor.hover &&
       (!this._menu || !this._menu.isOpen)
     )
@@ -2320,7 +2321,7 @@ export const MyShowAppsIconMenu = class extends PopupMenu.PopupMenu {
       this._appendSeparator()
     }
 
-    JSON.parse(SETTINGS.get_string('context-menu-entries')).forEach((e) => {
+    JSON.parse(SETTINGS_CACHE.get('context-menu-entries')).forEach((e) => {
       if (e.cmd == 'TERMINALSETTINGS')
         e.cmd = TERMINALSETTINGS.get_string('exec')
 
@@ -2338,14 +2339,14 @@ export const MyShowAppsIconMenu = class extends PopupMenu.PopupMenu {
     this._appendSeparator()
 
     let lockTaskbarMenuItem = this._appendMenuItem(
-      SETTINGS.get_boolean('taskbar-locked')
+      SETTINGS_CACHE.get('taskbar-locked')
         ? _('Unlock taskbar')
         : _('Lock taskbar'),
     )
     lockTaskbarMenuItem.connect('activate', () => {
       SETTINGS.set_boolean(
         'taskbar-locked',
-        !SETTINGS.get_boolean('taskbar-locked'),
+        !SETTINGS_CACHE.get('taskbar-locked'),
       )
     })
 
@@ -2414,7 +2415,7 @@ export const MyShowAppsIconMenu = class extends PopupMenu.PopupMenu {
 export const getIconContainerStyle = function (isVertical) {
   let style = 'padding: '
 
-  if (SETTINGS.get_boolean('group-apps')) {
+  if (SETTINGS_CACHE.get('group-apps')) {
     style += isVertical ? '0;' : '0 ' + DEFAULT_PADDING_SIZE + 'px;'
   } else {
     style += (isVertical ? '' : '0 ') + DEFAULT_PADDING_SIZE + 'px;'

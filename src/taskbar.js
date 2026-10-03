@@ -41,7 +41,7 @@ import * as PanelSettings from './panelSettings.js'
 import * as Pos from './panelPositions.js'
 import * as Utils from './utils.js'
 import * as WindowPreview from './windowPreview.js'
-import { SETTINGS, tracker } from './extension.js'
+import { SETTINGS, SETTINGS_CACHE, tracker } from './extension.js'
 
 const SearchController = Main.overview.searchController
 
@@ -70,14 +70,14 @@ export function extendDashItemContainer(dashItemContainer) {
 
 const iconAnimationSettings = {
   _getDictValue(key) {
-    let type = SETTINGS.get_string('animate-appicon-hover-animation-type')
-    return SETTINGS.get_value(key).deep_unpack()[type] || 0
+    let type = SETTINGS_CACHE.get('animate-appicon-hover-animation-type')
+    return SETTINGS_CACHE.get(key)[type] || 0
   },
 
   get type() {
-    if (!SETTINGS.get_boolean('animate-appicon-hover')) return ''
+    if (!SETTINGS_CACHE.get('animate-appicon-hover')) return ''
 
-    return SETTINGS.get_string('animate-appicon-hover-animation-type')
+    return SETTINGS_CACHE.get('animate-appicon-hover-animation-type')
   },
 
   get convexity() {
@@ -368,7 +368,7 @@ export const Taskbar = class extends EventEmitter {
         global.display,
         ['window-entered-monitor', 'window-left-monitor'],
         () => {
-          if (SETTINGS.get_boolean('isolate-monitors')) {
+          if (SETTINGS_CACHE.get('isolate-monitors')) {
             this._queueRedisplay()
           }
         },
@@ -423,14 +423,14 @@ export const Taskbar = class extends EventEmitter {
     )
 
     let setAttributes = () => {
-      this.isGroupApps = SETTINGS.get_boolean('group-apps')
+      this.isGroupApps = SETTINGS_CACHE.get('group-apps')
       this.usingLaunchers =
-        !this.isGroupApps && SETTINGS.get_boolean('group-apps-use-launchers')
+        !this.isGroupApps && SETTINGS_CACHE.get('group-apps-use-launchers')
       this.showFavorites =
-        SETTINGS.get_boolean('show-favorites') &&
+        SETTINGS_CACHE.get('show-favorites') &&
         (this.dtpPanel.isPrimary ||
-          SETTINGS.get_boolean('show-favorites-all-monitors'))
-      this.showRunningApps = SETTINGS.get_boolean('show-running-apps')
+          SETTINGS_CACHE.get('show-favorites-all-monitors'))
+      this.showRunningApps = SETTINGS_CACHE.get('show-running-apps')
       this.allowSplitApps =
         this.usingLaunchers || (!this.isGroupApps && !this.showFavorites)
     }
@@ -768,7 +768,7 @@ export const Taskbar = class extends EventEmitter {
       {
         setSizeManually: true,
         showLabel: false,
-        isDraggable: !SETTINGS.get_boolean('taskbar-locked'),
+        isDraggable: !SETTINGS_CACHE.get('taskbar-locked'),
       },
       this.previewMenu,
       this.iconAnimator,
@@ -959,7 +959,7 @@ export const Taskbar = class extends EventEmitter {
 
   _adjustIconSize() {
     let panelSize = this.dtpPanel.geom.iconSize / Utils.getScaleFactor()
-    let availSize = panelSize - SETTINGS.get_int('appicon-padding') * 2
+    let availSize = panelSize - SETTINGS_CACHE.get('appicon-padding') * 2
     let minIconSize = MIN_ICON_SIZE + (panelSize % 2)
 
     if (availSize == this.iconSize) return
@@ -1248,8 +1248,8 @@ export const Taskbar = class extends EventEmitter {
     })
 
     if (
-      SETTINGS.get_boolean('hot-keys') &&
-      SETTINGS.get_string('hotkeys-overlay-combo') === 'ALWAYS'
+      SETTINGS_CACHE.get('hot-keys') &&
+      SETTINGS_CACHE.get('hotkeys-overlay-combo') === 'ALWAYS'
     )
       this.toggleHotkeysNumberOverlay(true)
   }
@@ -1258,7 +1258,7 @@ export const Taskbar = class extends EventEmitter {
     let appIcons = this._getAppIcons()
     appIcons.forEach(function (icon) {
       icon.toggleHotkeysNumberOverlay(
-        activate ? SETTINGS.get_string('hotkeys-overlay-combo') : false,
+        activate ? SETTINGS_CACHE.get('hotkeys-overlay-combo') : false,
       )
     })
   }
@@ -1476,7 +1476,7 @@ export const Taskbar = class extends EventEmitter {
       // find visible view
 
       if (this.showAppsButton.checked) {
-        if (SETTINGS.get_boolean('show-apps-override-escape')) {
+        if (SETTINGS_CACHE.get('show-apps-override-escape')) {
           //override escape key to return to the desktop when entering the overview using the showapps button
           SearchController._onStageKeyPress = function () {
             // the key is the stage KeyController's, there is no event
@@ -1602,7 +1602,7 @@ export const TaskbarItemContainer = GObject.registerClass(
 
     // For ItemShowLabel
     _getIconAnimationOffset() {
-      if (!SETTINGS.get_boolean('animate-appicon-hover')) return 0
+      if (!SETTINGS_CACHE.get('animate-appicon-hover')) return 0
 
       let travel = iconAnimationSettings.travel
       let zoom = iconAnimationSettings.zoom

@@ -36,6 +36,33 @@ import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js'
 
 const SCROLL_TIME = Util.SCROLL_TIME / (Util.SCROLL_TIME > 1 ? 1000 : 1)
 
+// Hot paths (a focus change re-styles every icon, the taskbar handles each
+// pointer motion, sorting compares every app pair) read settings here
+// instead of paying a dconf lookup and a GVariant unpack per read. Created
+// right after the settings object, so its handler runs before any other
+// changed:: handler can read a stale value.
+export const SettingsCache = class {
+  constructor(settings) {
+    this._settings = settings
+    this._values = new Map()
+    this._changedId = settings.connect('changed', (s, key) =>
+      this._values.delete(key),
+    )
+  }
+
+  get(key) {
+    if (!this._values.has(key))
+      this._values.set(key, this._settings.get_value(key).deepUnpack())
+
+    return this._values.get(key)
+  }
+
+  destroy() {
+    this._settings.disconnect(this._changedId)
+    this._values.clear()
+  }
+}
+
 // simplify global signals and function injections handling
 // abstract class
 export const BasicHandler = class {
