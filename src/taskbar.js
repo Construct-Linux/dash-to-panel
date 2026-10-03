@@ -919,8 +919,10 @@ export const Taskbar = class extends EventEmitter {
       ) {
         // the scroll view does not track hover: test the pointer itself
         let [stageX, stageY] = global.get_pointer()
-        let [success, x, y] =
-          this._scrollView.transform_stage_point(stageX, stageY)
+        let [success, x, y] = this._scrollView.transform_stage_point(
+          stageX,
+          stageY,
+        )
 
         if (
           !success ||
@@ -1018,7 +1020,10 @@ export const Taskbar = class extends EventEmitter {
   // rather than once per comparison
   _sortAppsByStableSequence(apps) {
     let sequences = new Map(
-      apps.map((app) => [app, getAppStableSequence(app, this.dtpPanel.monitor)]),
+      apps.map((app) => [
+        app,
+        getAppStableSequence(app, this.dtpPanel.monitor),
+      ]),
     )
 
     return apps.sort((appA, appB) => sequences.get(appA) - sequences.get(appB))

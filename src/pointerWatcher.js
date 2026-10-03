@@ -43,9 +43,7 @@ export function getPointerWatcher() {
     _disconnect() {
       if (!this.positionInvalidateId) return
 
-      global.backend
-        .get_cursor_tracker()
-        .disconnect(this.positionInvalidateId)
+      global.backend.get_cursor_tracker().disconnect(this.positionInvalidateId)
       this.positionInvalidateId = 0
     },
     _onMotion() {

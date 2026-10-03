@@ -263,9 +263,7 @@ export const PanelManager = class {
         'monitors-changed',
         async () => {
           if (Main.layoutManager.primaryMonitor) {
-            await PanelSettings.setMonitorsInfo().catch((e) =>
-              console.log(e),
-            )
+            await PanelSettings.setMonitorsInfo().catch((e) => console.log(e))
             this._reset()
           }
         },
@@ -663,9 +661,7 @@ export const PanelManager = class {
       let monitor = Main.layoutManager.findMonitorForActor(
         boxPointer.sourceActor,
       )
-      let panel = global.dashToPanel.panels.find(
-        (p) => p.monitor == monitor,
-      )
+      let panel = global.dashToPanel.panels.find((p) => p.monitor == monitor)
       let excess = panel
         ? alloc.natural_size + panel.geom.outerSize + 10 - monitor.height // 10 is arbitrary
         : 0
@@ -846,9 +842,7 @@ function newUpdateHotCorners() {
 
   // build new hot corners
   for (let i = 0; i < this.monitors.length; i++) {
-    let panel = global.dashToPanel.panels.find(
-      (p) => p.monitor.index == i,
-    )
+    let panel = global.dashToPanel.panels.find((p) => p.monitor.index == i)
     let panelPosition = panel ? panel.geom.position : St.Side.BOTTOM
     let panelTopLeft =
       panelPosition == St.Side.TOP || panelPosition == St.Side.LEFT

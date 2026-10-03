@@ -151,7 +151,12 @@ export function setPanelLength(settings, monitorIndex, value) {
 
 /** Returns position of panel on a specific monitor. */
 export function getPanelPosition(settings, monitorIndex) {
-  return getMonitorSetting(settings, 'panel-positions', monitorIndex, Pos.BOTTOM)
+  return getMonitorSetting(
+    settings,
+    'panel-positions',
+    monitorIndex,
+    Pos.BOTTOM,
+  )
 }
 
 export function setPanelPosition(settings, monitorIndex, value) {

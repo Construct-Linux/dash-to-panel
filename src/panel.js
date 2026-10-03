@@ -651,7 +651,10 @@ export const Panel = GObject.registerClass(
         },
       }
 
-      return PanelSettings.getPanelElementPositions(SETTINGS, this.monitor.index)
+      return PanelSettings.getPanelElementPositions(
+        SETTINGS,
+        this.monitor.index,
+      )
         .filter((pos) => pos.visible && menus[pos.element])
         .map((pos) => menus[pos.element])
         .filter(({ name }) => !this.statusArea[name])
@@ -866,18 +869,12 @@ export const Panel = GObject.registerClass(
         })
 
       setMap(Pos.SHOW_APPS_BTN, this.showAppsIconWrapper.realShowAppsIcon)
-      setMap(
-        Pos.ACTIVITIES_BTN,
-        this.statusArea.activities?.container,
-      )
+      setMap(Pos.ACTIVITIES_BTN, this.statusArea.activities?.container)
       setMap(Pos.LEFT_BOX, this._leftBox)
       setMap(Pos.TASKBAR, this.taskbar.actor)
       setMap(Pos.CENTER_BOX, this._centerBox)
       setMap(Pos.DATE_MENU, this.statusArea.dateMenu?.container)
-      setMap(
-        Pos.SYSTEM_MENU,
-        this.statusArea.quickSettings?.container,
-      )
+      setMap(Pos.SYSTEM_MENU, this.statusArea.quickSettings?.container)
       setMap(Pos.RIGHT_BOX, this._rightBox)
       setMap(Pos.DESKTOP_BTN, this._showDesktopButton)
     }
