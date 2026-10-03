@@ -447,6 +447,11 @@ export const Taskbar = class extends EventEmitter {
       this._waitIdleId = 0
     }
 
+    if (this._updateAppIconsIdleId) {
+      GLib.source_remove(this._updateAppIconsIdleId)
+      this._updateAppIconsIdleId = 0
+    }
+
     this._timeoutsHandler.destroy()
     this.iconAnimator.destroy()
 
@@ -878,14 +883,19 @@ export const Taskbar = class extends EventEmitter {
     })
   }
 
+  // scrolling and relayouts emit notify::upper in bursts: settle them into
+  // one pass over the icons once the taskbar is idle
   _updateAppIcons() {
-    let appIcons = this._getAppIcons()
+    if (this._updateAppIconsIdleId) return
 
-    appIcons
-      .filter((icon) => icon.constructor === AppIcons.TaskbarAppIcon)
-      .forEach((icon) => {
-        icon.updateIcon()
-      })
+    this._updateAppIconsIdleId = GLib.idle_add(GLib.PRIORITY_LOW, () => {
+      this._updateAppIconsIdleId = 0
+      this._getAppIcons()
+        .filter((icon) => icon.constructor === AppIcons.TaskbarAppIcon)
+        .forEach((icon) => icon.updateIconGeometry())
+
+      return GLib.SOURCE_REMOVE
+    })
   }
 
   _itemMenuStateChanged(item, opened) {

@@ -501,23 +501,31 @@ export const TaskbarAppIcon = GObject.registerClass(
       if (this.get_stage() == null || this._updateIconIdleId) return
 
       this._updateIconIdleId = GLib.idle_add(GLib.PRIORITY_LOW, () => {
-        let rect = new Mtk.Rectangle()
-
-        ;[rect.x, rect.y] = this.get_transformed_position()
-        ;[rect.width, rect.height] = this.get_transformed_size()
-
-        let windows = this.window
-          ? [this.window]
-          : this.getAppIconInterestingWindows(true)
-
-        windows.forEach(function (w) {
-          w.set_icon_geometry(rect)
-        })
-
         this._updateIconIdleId = 0
+        this.updateIconGeometry(true)
 
         return GLib.SOURCE_REMOVE
       })
+    }
+
+    // force: the window list changed, so even an unmoved icon has windows
+    // without its geometry
+    updateIconGeometry(force) {
+      if (this.get_stage() == null) return
+
+      let [x, y] = this.get_transformed_position()
+      let [width, height] = this.get_transformed_size()
+      let rect = new Mtk.Rectangle({ x, y, width, height })
+
+      if (!force && this._iconGeometry?.equal(rect)) return
+
+      this._iconGeometry = rect
+
+      let windows = this.window
+        ? [this.window]
+        : this.getAppIconInterestingWindows(true)
+
+      windows.forEach((w) => w.set_icon_geometry(rect))
     }
 
     _onAnimateAppiconHoverChanged() {
