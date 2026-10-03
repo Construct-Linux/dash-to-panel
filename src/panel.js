@@ -1509,7 +1509,7 @@ export const Panel = GObject.registerClass(
       let time = SETTINGS.get_int('show-showdesktop-time') * 0.001
 
       workspace.list_windows().forEach((w) => {
-        if (!w.minimized && !w.customJS_ding) {
+        if (!w.minimized) {
           let tweenOpts = {
             opacity: hide ? 0 : 255,
             time: time,

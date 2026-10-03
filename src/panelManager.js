@@ -32,7 +32,6 @@ import * as Panel from './panel.js'
 import * as PanelSettings from './panelSettings.js'
 import * as Proximity from './proximity.js'
 import * as Utils from './utils.js'
-import * as DesktopIconsIntegration from './desktopIconsIntegration.js'
 import {
   DTP_EXTENSION,
   SETTINGS,
@@ -40,7 +39,6 @@ import {
   tracker,
 } from './extension.js'
 
-import GLib from 'gi://GLib'
 import GObject from 'gi://GObject'
 import Clutter from 'gi://Clutter'
 import Meta from 'gi://Meta'
@@ -109,8 +107,6 @@ export const PanelManager = class {
     global.dashToPanel.panels = this.allPanels
     global.dashToPanel.emit('panels-created')
 
-    this._setDesktopIconsMargins()
-
     this._updatePanelElementPositions()
 
     if (!keepGsTopPanel) Main.panel._clickGesture.set_enabled(false)
@@ -118,9 +114,6 @@ export const PanelManager = class {
     if (reset) return
 
     this.notificationsMonitor = new NotificationsMonitor()
-
-    this._desktopIconsUsableArea =
-      new DesktopIconsIntegration.DesktopIconsUsableAreaClass()
 
     this._oldUpdatePanelBarrier = Main.layoutManager._updatePanelBarrier
     Main.layoutManager._updatePanelBarrier = (panel) => {
@@ -266,16 +259,6 @@ export const PanelManager = class {
         () => this._setKeyBindings(true),
       ],
       [
-        SETTINGS,
-        'changed::panel-sizes',
-        () => {
-          GLib.idle_add(GLib.PRIORITY_LOW, () => {
-            this._setDesktopIconsMargins()
-            return GLib.SOURCE_REMOVE
-          })
-        },
-      ],
-      [
         global.backend.get_monitor_manager(),
         'monitors-changed',
         async () => {
@@ -408,52 +391,6 @@ export const PanelManager = class {
     delete Main.messageTray._bannerBin.ease
 
     delete Main.panel.style
-    this._desktopIconsUsableArea.destroy()
-    this._desktopIconsUsableArea = null
-  }
-
-  _setDesktopIconsMargins() {
-    this._desktopIconsUsableArea?.resetMargins()
-    this.allPanels.forEach((p) => {
-      switch (p.geom.position) {
-        case St.Side.TOP:
-          this._desktopIconsUsableArea?.setMargins(
-            p.monitor.index,
-            p.geom.outerSize,
-            0,
-            0,
-            0,
-          )
-          break
-        case St.Side.BOTTOM:
-          this._desktopIconsUsableArea?.setMargins(
-            p.monitor.index,
-            0,
-            p.geom.outerSize,
-            0,
-            0,
-          )
-          break
-        case St.Side.LEFT:
-          this._desktopIconsUsableArea?.setMargins(
-            p.monitor.index,
-            0,
-            0,
-            p.geom.outerSize,
-            0,
-          )
-          break
-        case St.Side.RIGHT:
-          this._desktopIconsUsableArea?.setMargins(
-            p.monitor.index,
-            0,
-            0,
-            0,
-            p.geom.outerSize,
-          )
-          break
-      }
-    })
   }
 
   setFocusedMonitor(monitor) {
@@ -538,7 +475,6 @@ export const PanelManager = class {
               .forEach((w) => {
                 if (
                   !w.minimized &&
-                  !w.customJS_ding &&
                   global.display.focus_window != w &&
                   tracker.get_window_app(w) != this.focusedApp
                 ) {

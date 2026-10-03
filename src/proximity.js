@@ -225,7 +225,6 @@ export const ProximityManager = class {
     return (
       metaWindow &&
       !metaWindow.minimized &&
-      !metaWindow.customJS_ding &&
       this._checkIfHandledWindowType(metaWindow)
     )
   }
