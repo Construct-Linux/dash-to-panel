@@ -238,13 +238,6 @@ export const setDisplayUnredirect = (enable) => {
   unredirectEnabled = enable
 }
 
-export const getSystemMenuInfo = function () {
-  return {
-    name: 'quickSettings',
-    constructor: Main.panel.statusArea.quickSettings.constructor,
-  }
-}
-
 export function getOverviewWorkspaces() {
   let workspaces = []
 
@@ -281,30 +274,6 @@ export const getStageTheme = function () {
 
 export const getScaleFactor = function () {
   return getStageTheme().scale_factor || 1
-}
-
-export const findIndex = function (array, predicate) {
-  if (array) {
-    if (Array.prototype.findIndex) {
-      return array.findIndex(predicate)
-    }
-
-    for (let i = 0, l = array.length; i < l; ++i) {
-      if (predicate(array[i])) {
-        return i
-      }
-    }
-  }
-
-  return -1
-}
-
-export const find = function (array, predicate) {
-  let index = findIndex(array, predicate)
-
-  if (index > -1) {
-    return array[index]
-  }
 }
 
 export const mergeObjects = function (main, bck) {
@@ -517,14 +486,6 @@ export const animate = function (actor, options) {
 
 export const stopAnimations = function (actor) {
   actor.remove_all_transitions()
-}
-
-export const getIndicators = function (delegate) {
-  if (delegate instanceof St.BoxLayout) {
-    return delegate
-  }
-
-  return delegate.indicators
 }
 
 export const getPoint = function (coords) {

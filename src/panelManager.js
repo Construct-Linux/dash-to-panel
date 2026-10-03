@@ -727,8 +727,7 @@ export const PanelManager = class {
       let monitor = Main.layoutManager.findMonitorForActor(
         boxPointer.sourceActor,
       )
-      let panel = Utils.find(
-        global.dashToPanel.panels,
+      let panel = global.dashToPanel.panels.find(
         (p) => p.monitor == monitor,
       )
       let excess = panel
@@ -806,10 +805,8 @@ export const IconAnimator = class {
     this._timeline = new Clutter.Timeline({
       duration: 3000,
       repeat_count: -1,
+      actor,
     })
-
-    /* Just use the construction property when no need to support 3.36 */
-    if (this._timeline.set_actor) this._timeline.set_actor(actor)
 
     this._timeline.connect('new-frame', () => {
       const progress = this._timeline.get_progress()
@@ -913,8 +910,7 @@ function newUpdateHotCorners() {
 
   // build new hot corners
   for (let i = 0; i < this.monitors.length; i++) {
-    let panel = Utils.find(
-      global.dashToPanel.panels,
+    let panel = global.dashToPanel.panels.find(
       (p) => p.monitor.index == i,
     )
     let panelPosition = panel ? panel.geom.position : St.Side.BOTTOM
@@ -1078,8 +1074,7 @@ function newUpdatePanelBarrier(panel) {
 }
 
 function _newLookingGlassResize() {
-  let primaryMonitorPanel = Utils.find(
-    global.dashToPanel.panels,
+  let primaryMonitorPanel = global.dashToPanel.panels.find(
     (p) => p.monitor == Main.layoutManager.primaryMonitor,
   )
   let topOffset = !primaryMonitorPanel

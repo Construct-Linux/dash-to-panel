@@ -21,7 +21,6 @@
  * mathematical.coffee@gmail.com
  */
 
-import * as Utils from './utils.js'
 import { SETTINGS } from './extension.js'
 
 export const PanelStyle = class {
@@ -253,7 +252,7 @@ export const PanelStyle = class {
     if (this._rightBoxOperations.length) {
       // add the system menu as we move it from the rightbox to the panel to position it independently
       let children = this.panel._rightBox.get_children()
-      let systemMenu = this.panel.statusArea[Utils.getSystemMenuInfo().name]
+      let systemMenu = this.panel.statusArea.quickSettings
 
       if (systemMenu) children.push(systemMenu.container)
 

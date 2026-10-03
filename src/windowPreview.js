@@ -367,8 +367,7 @@ export const PreviewMenu = GObject.registerClass(
       windows.sort(Taskbar.sortWindowsCompareFunction)
 
       for (let i = 0, l = windows.length; i < l; ++i) {
-        let currentIndex = Utils.findIndex(
-          currentPreviews,
+        let currentIndex = currentPreviews.findIndex(
           (c) => c.window == windows[i],
         )
 
@@ -1166,8 +1165,7 @@ export const Preview = GObject.registerClass(
             ']',
         )
         let menuItems = menu.box.get_children()
-        let insertIndex = Utils.findIndex(
-          menuItems,
+        let insertIndex = menuItems.findIndex(
           (c) => c._delegate instanceof PopupMenu.PopupSeparatorMenuItem,
         )
 

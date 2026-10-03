@@ -1070,8 +1070,7 @@ export const Taskbar = class extends EventEmitter {
     //remove the appIcons which are not in the expected apps list
     for (let i = currentAppIcons.length - 1; i > -1; --i) {
       let appIcon = currentAppIcons[i].child._delegate
-      let appIndex = Utils.findIndex(
-        expectedAppInfos,
+      let appIndex = expectedAppInfos.findIndex(
         (appInfo) =>
           appInfo.app == appIcon.app &&
           (!this.allowSplitApps ||
@@ -1117,8 +1116,7 @@ export const Taskbar = class extends EventEmitter {
 
       for (let j = 0, ll = neededAppIcons.length; j < ll; ++j) {
         //check if the icon already exists
-        let matchingAppIconIndex = Utils.findIndex(
-          currentAppIcons,
+        let matchingAppIconIndex = currentAppIcons.findIndex(
           (appIcon) =>
             appIcon.child._delegate.app == neededAppIcons[j].app &&
             appIcon.child._delegate.window == neededAppIcons[j].window,
@@ -1312,8 +1310,7 @@ export const Taskbar = class extends EventEmitter {
 
     let currentAppIcons = this._getAppIcons()
     let sourceIndex = currentAppIcons.indexOf(source)
-    let hoveredIndex = Utils.findIndex(
-      currentAppIcons,
+    let hoveredIndex = currentAppIcons.findIndex(
       (appIcon) =>
         pos >= appIcon._dashItemContainer[posProp] &&
         pos <=

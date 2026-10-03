@@ -107,8 +107,6 @@ export const Panel = GObject.registerClass(
       this._unmappedButtons = []
       this._elementGroups = []
 
-      let systemMenuInfo = Utils.getSystemMenuInfo()
-
       if (isStandalone) {
         this.panel = new SecondaryPanel({ name: 'panel', reactive: true })
         this.statusArea = this.panel.statusArea = {}
@@ -172,7 +170,7 @@ export const Panel = GObject.registerClass(
         }
 
         panelBoxes.forEach((p) => (this[p] = Main.panel[p]))
-        ;['activities', systemMenuInfo.name, 'dateMenu'].forEach((b) => {
+        ;['activities', 'quickSettings', 'dateMenu'].forEach((b) => {
           let container = this.statusArea[b].container
           let parent = container.get_parent()
           let siblings = parent.get_children()
@@ -212,16 +210,9 @@ export const Panel = GObject.registerClass(
     }
 
     enable() {
-      let { name: systemMenuName } = Utils.getSystemMenuInfo()
-
-      if (
-        this.statusArea[systemMenuName] &&
-        this.statusArea[systemMenuName]._volumeOutput
-      ) {
-        Utils.getIndicators(
-          this.statusArea[systemMenuName]._volumeOutput,
-        )._dtpIgnoreScroll = 1
-      }
+      // QuickSettings builds its indicators asynchronously
+      if (this.statusArea.quickSettings?._volumeOutput)
+        this.statusArea.quickSettings._volumeOutput._dtpIgnoreScroll = 1
 
       this._setPanelBoxStyle()
       this._maybeSetDockCss()
@@ -426,15 +417,13 @@ export const Panel = GObject.registerClass(
       this._setVertical(this._centerBox, false)
       this._setVertical(this._rightBox, false)
 
-      let { name: systemMenuName } = Utils.getSystemMenuInfo()
-
       if (!this.isStandalone) {
         ;['vertical', 'horizontal', 'dashtopanelMainPanel'].forEach((c) =>
           this.panel.remove_style_class_name(c),
         )
 
         if (!Main.sessionMode.isLocked) {
-          ;['activities', systemMenuName, 'dateMenu'].forEach((b) => {
+          ;['activities', 'quickSettings', 'dateMenu'].forEach((b) => {
             let container = this.statusArea[b].container
             let originalParent = container._dtpOriginalParent
 
@@ -465,16 +454,14 @@ export const Panel = GObject.registerClass(
         this._setShowDesktopButton(false)
 
         delete this.panel._toggleMenu
-        delete Utils.getIndicators(
-          this.statusArea[systemMenuName]._volumeOutput,
-        )._dtpIgnoreScroll
+        delete this.statusArea.quickSettings._volumeOutput?._dtpIgnoreScroll
 
         this._injectionManager.clear()
 
         this.panel._delegate = this.panel
       } else {
         this._removePanelMenu('dateMenu')
-        this._removePanelMenu(systemMenuName)
+        this._removePanelMenu('quickSettings')
         this._removePanelMenu('activities')
       }
 
@@ -654,8 +641,8 @@ export const Panel = GObject.registerClass(
 
       let menus = {
         [Pos.SYSTEM_MENU]: {
-          name: Utils.getSystemMenuInfo().name,
-          constr: Utils.getSystemMenuInfo().constructor,
+          name: 'quickSettings',
+          constr: Main.panel.statusArea.quickSettings.constructor,
         },
         [Pos.DATE_MENU]: { name: 'dateMenu', constr: DateMenu.DateMenuButton },
         [Pos.ACTIVITIES_BTN]: {
@@ -889,7 +876,7 @@ export const Panel = GObject.registerClass(
       setMap(Pos.DATE_MENU, this.statusArea.dateMenu?.container)
       setMap(
         Pos.SYSTEM_MENU,
-        this.statusArea[Utils.getSystemMenuInfo().name]?.container,
+        this.statusArea.quickSettings?.container,
       )
       setMap(Pos.RIGHT_BOX, this._rightBox)
       setMap(Pos.DESKTOP_BTN, this._showDesktopButton)
@@ -1271,7 +1258,7 @@ export const Panel = GObject.registerClass(
         .sort_windows_by_stacking(workspace.list_windows())
         .reverse()
 
-      return Utils.find(allWindowsByStacking, (metaWindow) => {
+      return allWindowsByStacking.find((metaWindow) => {
         let rect = metaWindow.get_frame_rect()
 
         return (
