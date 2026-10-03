@@ -52,7 +52,7 @@ export async function init(settings) {
     () => (useCache = !settings.get_boolean('prefs-opened')),
   )
 
-  await setMonitorsInfo(settings)
+  await setMonitorsInfo()
 }
 
 export async function disable(settings) {
@@ -93,20 +93,15 @@ export function setSettingsJson(settings, setting, value) {
   }
 }
 
-// Previously, the monitor index was used as an id to persist per monitor
-// settings. Since these indexes are unreliable AF, switch to use the monitor
-// serial as its id while keeping it backward compatible.
+// Per monitor settings are keyed by monitor id. The index is the fallback
+// key: CONSTRUCT's image defaults are keyed by index because monitor serials
+// are unknown when the image is built.
 function getMonitorSetting(settings, settingName, monitorIndex, fallback) {
   let monitorId = monitorIndexToId[monitorIndex]
 
   settings = getSettingsJson(settings, settingName)
 
-  return (
-    settings[monitorId] ||
-    settings[monitorIndex] ||
-    settings[availableMonitors[monitorIndex]?.id] ||
-    fallback
-  )
+  return settings[monitorId] || settings[monitorIndex] || fallback
 }
 
 function setMonitorSetting(settings, settingName, monitorIndex, value) {
@@ -123,13 +118,7 @@ function setMonitorSetting(settings, settingName, monitorIndex, value) {
 
 /** Returns size of panel on a specific monitor, in pixels. */
 export function getPanelSize(settings, monitorIndex) {
-  // Pull in deprecated setting if panel-sizes does not have setting for monitor.
-  return getMonitorSetting(
-    settings,
-    'panel-sizes',
-    monitorIndex,
-    settings.get_int('panel-size') || 48,
-  )
+  return getMonitorSetting(settings, 'panel-sizes', monitorIndex, 48)
 }
 
 export function setPanelSize(settings, monitorIndex, value) {
@@ -162,12 +151,7 @@ export function setPanelLength(settings, monitorIndex, value) {
 
 /** Returns position of panel on a specific monitor. */
 export function getPanelPosition(settings, monitorIndex) {
-  return getMonitorSetting(
-    settings,
-    'panel-positions',
-    monitorIndex,
-    settings.get_string('panel-position') || Pos.BOTTOM,
-  )
+  return getMonitorSetting(settings, 'panel-positions', monitorIndex, Pos.BOTTOM)
 }
 
 export function setPanelPosition(settings, monitorIndex, value) {
@@ -222,7 +206,7 @@ export function getPrimaryIndex(dtpPrimaryId) {
   return availableMonitors.findIndex((am) => am.primary)
 }
 
-export function setMonitorsInfo(settings) {
+export function setMonitorsInfo() {
   return new Promise((resolve, reject) => {
     try {
       let monitorInfos = []
@@ -256,7 +240,7 @@ export function setMonitorsInfo(settings) {
             ids[id] = 1
           })
 
-          _saveMonitors(settings, monitorInfos)
+          _saveMonitors(monitorInfos)
 
           resolve()
         })
@@ -280,37 +264,6 @@ export function setMonitorsInfo(settings) {
   })
 }
 
-function _saveMonitors(settings, monitorInfos) {
-  let keyPrimary = 'primary-monitor'
-  let dtpPrimaryMonitor = settings.get_string(keyPrimary)
-
-  // convert previously saved index to monitor id
-  if (dtpPrimaryMonitor.match(/^\d{1,2}$/) && monitorInfos[dtpPrimaryMonitor])
-    settings.set_string(keyPrimary, monitorInfos[dtpPrimaryMonitor].id)
-
+function _saveMonitors(monitorInfos) {
   availableMonitors = Object.freeze(monitorInfos)
-}
-
-// this is for backward compatibility, to remove in a few versions
-export function adjustMonitorSettings(settings) {
-  let updateSettings = (settingName) => {
-    let monitorSettings = getSettingsJson(settings, settingName)
-    let updatedSettings = {}
-
-    Object.keys(monitorSettings).forEach((key) => {
-      let initialKey = key
-
-      if (key.match(/^\d{1,2}$/)) key = monitorIndexToId[key] || key
-
-      updatedSettings[key] = monitorSettings[initialKey]
-    })
-
-    setSettingsJson(settings, settingName, updatedSettings)
-  }
-
-  updateSettings('panel-sizes')
-  updateSettings('panel-lengths')
-  updateSettings('panel-positions')
-  updateSettings('panel-anchors')
-  updateSettings('panel-element-positions')
 }

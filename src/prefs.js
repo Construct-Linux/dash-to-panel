@@ -220,13 +220,13 @@ const Preferences = class {
     // set the window as notebook, it is being used as parent for dialogs
     this.notebook = window
 
-    PanelSettings.setMonitorsInfo(settings).then(() => {
+    PanelSettings.setMonitorsInfo().then(() => {
       this._bindSettings()
 
       PanelSettings.displayConfigProxy.connectSignal(
         'MonitorsChanged',
         async () => {
-          await PanelSettings.setMonitorsInfo(settings)
+          await PanelSettings.setMonitorsInfo()
           this._setMonitorsInfo()
         },
       )

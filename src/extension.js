@@ -79,13 +79,12 @@ export default class DashToPanelExtension extends Extension {
     //create a global object that can emit signals and conveniently expose functionalities to other extensions
     global.dashToPanel = new EventEmitter()
 
-    // reset to be safe
-    SETTINGS.set_boolean('prefs-opened', false)
+    // a prefs window that died without clearing the flag would keep
+    // openPreferences from opening a new one; write only when it is set
+    if (SETTINGS.get_boolean('prefs-opened'))
+      SETTINGS.set_boolean('prefs-opened', false)
 
     await PanelSettings.init(SETTINGS)
-
-    // To remove later, try to map settings using monitor indexes to monitor ids
-    PanelSettings.adjustMonitorSettings(SETTINGS)
 
     // if new version, display a notification linking to release notes
     if (this.metadata.version != SETTINGS.get_int('extension-version')) {

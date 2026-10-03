@@ -70,11 +70,6 @@
     <value value='2' nick='PLANK'/>
   </enum>
   <schema path="/org/gnome/shell/extensions/dash-to-panel/" id="org.gnome.shell.extensions.dash-to-panel">
-    <key name="panel-position" enum="org.gnome.shell.extensions.dash-to-panel.position">
-      <default>'BOTTOM'</default>
-      <summary>Panel position (Deprecated)</summary>
-      <description>Panel is shown on the Bottom or Top of the screen.</description>
-    </key>
     <key name="panel-element-positions-monitors-sync" type="b">
       <default>true</default>
       <summary>Sync element positions</summary>
@@ -104,11 +99,6 @@
       <default>'{}'</default>
       <summary>Panel sizes</summary>
       <description>Sizes of panels, in pixels.</description>
-    </key>
-    <key type="i" name="panel-size">
-      <default>48</default>
-      <summary>Panel size (Deprecated)</summary>
-      <description>Set the size of the panel.</description>
     </key>
     <key type="b" name="desktop-line-use-custom-color">
       <default>false</default>
