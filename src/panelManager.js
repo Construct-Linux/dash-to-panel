@@ -1001,14 +1001,18 @@ function newUpdateHotCorners() {
     if (haveTopLeftCorner) {
       let corner = new Layout.HotCorner(this, monitor, cornerX, cornerY)
 
-      corner.setBarrierSize = (size) =>
-        Object.getPrototypeOf(corner).setBarrierSize.call(
-          corner,
-          Math.min(size, panel.geom.gsTopPanelHeight),
-        )
-      corner.setBarrierSize(
-        panel ? panel.geom.innerSize : panel.geom.gsTopPanelHeight,
-      )
+      if (panel) {
+        // a vertical panel owns panelBox when the top panel is gone, and its
+        // height would turn the corner barrier into a wall along the edge
+        let maxSize = panel.geom.innerSize
+
+        corner.setBarrierSize = (size) =>
+          Object.getPrototypeOf(corner).setBarrierSize.call(
+            corner,
+            Math.min(size, maxSize),
+          )
+      }
+      corner.setBarrierSize(this.panelBox.height)
       this.hotCorners.push(corner)
     } else {
       this.hotCorners.push(null)
@@ -1111,8 +1115,9 @@ function _newLookingGlassResize() {
     global.dashToPanel.panels,
     (p) => p.monitor == Main.layoutManager.primaryMonitor,
   )
-  let topOffset =
-    primaryMonitorPanel.geom.position == St.Side.TOP
+  let topOffset = !primaryMonitorPanel
+    ? Main.layoutManager.panelBox.height
+    : primaryMonitorPanel.geom.position == St.Side.TOP
       ? primaryMonitorPanel.geom.outerSize +
         (SETTINGS.get_boolean('stockgs-keep-top-panel')
           ? Main.layoutManager.panelBox.height
