@@ -2149,7 +2149,6 @@ export const ShowAppsIconWrapper = class extends EventEmitter {
 
   _onMenuPoppedDown() {
     this._menu.sourceActor = this.actor
-    this.actor.sync_hover()
     this.emit('menu-state-changed', false)
   }
 

@@ -294,12 +294,6 @@ export const Panel = GObject.registerClass(
             delete this._externalStyleChangeHandled
           },
         ],
-        [
-          // sync hover after a popupmenu is closed
-          this.taskbar,
-          'menu-closed',
-          () => this.panel.sync_hover(),
-        ],
         [Main.overview, ['showing', 'hiding'], () => this._adjustForOverview()],
         [
           Main.overview,

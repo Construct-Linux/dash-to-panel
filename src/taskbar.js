@@ -899,8 +899,8 @@ export const Taskbar = class extends EventEmitter {
   }
 
   _itemMenuStateChanged(item, opened) {
-    // When the menu closes, it calls sync_hover, which means
-    // that the notify::hover handler does everything we need to.
+    // When the menu closes, the grab ends and St updates hover from the
+    // crossing events, so the notify::hover handler does everything we need.
     if (opened) {
       this._timeoutsHandler.remove(T2)
 
@@ -917,8 +917,19 @@ export const Taskbar = class extends EventEmitter {
         iconAnimationSettings.type == 'RIPPLE' ||
         iconAnimationSettings.type == 'PLANK'
       ) {
-        this._scrollView.sync_hover()
-        if (!this._scrollView.hover) this._dropIconAnimations()
+        // the scroll view does not track hover: test the pointer itself
+        let [stageX, stageY] = global.get_pointer()
+        let [success, x, y] =
+          this._scrollView.transform_stage_point(stageX, stageY)
+
+        if (
+          !success ||
+          x < 0 ||
+          y < 0 ||
+          x >= this._scrollView.width ||
+          y >= this._scrollView.height
+        )
+          this._dropIconAnimations()
       }
     }
   }
@@ -1546,7 +1557,6 @@ export const Taskbar = class extends EventEmitter {
         if (appIcon._menu && appIcon._menu.isOpen) appIcon._menu.close()
         else appIcon.popupMenu()
 
-        appIcon.sync_hover()
         break
       }
     }
