@@ -30,10 +30,10 @@ import Graphene from 'gi://Graphene'
 import Meta from 'gi://Meta'
 import Shell from 'gi://Shell'
 import St from 'gi://St'
-import * as Util from 'resource:///org/gnome/shell/misc/util.js'
 import * as Main from 'resource:///org/gnome/shell/ui/main.js'
 
-const SCROLL_TIME = Util.SCROLL_TIME / (Util.SCROLL_TIME > 1 ? 1000 : 1)
+// seconds, for animate(); 51 keeps its 100 ms private (js/misc/animationUtils.js:7)
+const SCROLL_TIME = 0.1
 
 // Hot paths (a focus change re-styles every icon, the taskbar handles each
 // pointer motion, sorting compares every app pair) read settings here

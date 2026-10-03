@@ -48,7 +48,7 @@ const SearchController = Main.overview.searchController
 export var hotkeyAppNumbers = {}
 
 export const DASH_ANIMATION_TIME = 0.2 // Dash.DASH_ANIMATION_TIME is now private
-const DASH_ITEM_HOVER_TIMEOUT = 0.3 // Dash.DASH_ITEM_HOVER_TIMEOUT is now private
+const DASH_ITEM_HOVER_TIMEOUT = 300 // ms, private in 51 (js/ui/dash.js:19)
 export const MIN_ICON_SIZE = 4
 
 const T1 = 'ensureAppIconVisibilityTimeout'

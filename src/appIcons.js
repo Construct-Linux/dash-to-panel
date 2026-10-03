@@ -57,6 +57,9 @@ import {
   ngettext,
 } from 'resource:///org/gnome/shell/extensions/extension.js'
 
+// seconds, for Utils.animate(); 51 keeps its 150 ms private (js/ui/dash.js:17)
+const DASH_ITEM_LABEL_SHOW_TIME = 0.15
+
 //timeout names
 const T2 = 'mouseScrollTimeout'
 const T3 = 'showDotsTimeout'
@@ -2048,15 +2051,9 @@ export function ItemShowLabel() {
 
   this.label.set_position(Math.round(x), Math.round(y))
 
-  let duration = Dash.DASH_ITEM_LABEL_SHOW_TIME
-
-  if (duration > 1) {
-    duration /= 1000
-  }
-
   Utils.animate(this.label, {
     opacity: 255,
-    time: duration,
+    time: DASH_ITEM_LABEL_SHOW_TIME,
     transition: 'easeOutQuad',
   })
 }

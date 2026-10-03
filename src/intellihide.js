@@ -42,9 +42,9 @@ const T2 = 'limitUpdateTimeout'
 const T3 = 'postAnimateTimeout'
 const T4 = 'enableStartTimeout'
 
+// 51 exports milliseconds; Utils.animate() takes seconds
 const SIDE_CONTROLS_ANIMATION_TIME =
-  OverviewControls.SIDE_CONTROLS_ANIMATION_TIME /
-  (OverviewControls.SIDE_CONTROLS_ANIMATION_TIME > 1 ? 1000 : 1)
+  OverviewControls.SIDE_CONTROLS_ANIMATION_TIME / 1000
 
 export const Hold = {
   NONE: 0,
