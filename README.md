@@ -23,6 +23,9 @@ older shells are removed.
 - Escape in the overview, opened from the show-apps button, returns to the
   desktop again: GNOME Shell 51 delivers the key through its stage
   `KeyController`, not an event.
+- The About page shows the packaged version without an upstream release link,
+  points its source link and `metadata.json` at this fork, and drops the
+  sponsor logo and donation entry.
 - GNOME Shell 51 only: version checks, feature probes and fallbacks for older
   shells are gone, as are upstream's CI, design media, donation images, Node
   lint tooling and the extensions.gnome.org zip target.

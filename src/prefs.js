@@ -3841,15 +3841,13 @@ const Preferences = class {
 
     // About Panel
 
-    let versionLinkButton = this._builder.get_object('extension_version')
-
-    versionLinkButton.set_label(
-      this._metadata.version.toString() +
-        (this._metadata.commit ? ' (' + this._metadata.commit + ')' : ''),
-    )
-    versionLinkButton.set_uri(
-      `${this._metadata.url}/${this._metadata.commit ? `commit/${this._metadata.commit}` : `releases/tag/v${this._metadata.version}`}`,
-    )
+    // the image's package version: upstream has no release with this number
+    this._builder
+      .get_object('extension_version')
+      .set_label(
+        this._metadata.version.toString() +
+          (this._metadata.commit ? ' (' + this._metadata.commit + ')' : ''),
+      )
 
     this._builder
       .get_object('importexport_export_button')
@@ -3906,10 +3904,6 @@ const Preferences = class {
           },
         )
       })
-
-    this._builder
-      .get_object('zorin_os_logo')
-      .set_filename(`${this._path}/img/zorin-os.svg`)
   }
 
   _setPreviewTitlePosition() {
