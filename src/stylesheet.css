@@ -40,7 +40,8 @@
 
 #dashtopanelScrollview .overview-tile:hover .dtp-container,
 #dashtopanelScrollview .overview-tile:focus .dtp-container {
-	background-color: rgba(238, 238, 236, 0.1);
+	/* Orchis does not know .dtp-container: the hover is the dark text at an alpha */
+	background-color: rgba(230, 237, 242, 0.1);
 	border-radius: 0px;
 }
 
@@ -49,12 +50,6 @@
 	border-radius: 0px;
 }
 
-.dashtopanelMainPanel .dash-item-container .show-apps:hover {
-	background-color: rgba(238, 238, 238, 0.1);
-}
-.dashtopanelMainPanel .dash-item-container .show-apps .overview-icon {
-	color: #FFF;
-}
 .dashtopanelMainPanel .dash-item-container .show-apps:hover .overview-icon {
 	background: none;
 }
@@ -67,14 +62,17 @@
 }
 
 #dashtopanelScrollview .overview-tile:active .dtp-container {
-	background-color: rgba(238, 238, 236, 0.18);
+	/* the hover's dark text at a higher alpha, so a press reads over it */
+	background-color: rgba(230, 237, 242, 0.18);
 }
 
 #dashtopanelScrollview .overview-tile .favorite {
-	background-color: rgba(80, 150, 255, 0.4);
+	/* the favorites shown while dragging: the accent as a tint (palette tint.dark.rest) */
+	background-color: rgba(0, 229, 255, 0.16);
 }
 
 #dashtopanelTaskbar .scrollview-fade {
+	/* fully transparent: the fade runs from the panel color taskbar.js sets to nothing */
 	background-gradient-end: rgba(0, 0, 0, 0);
 }
 
@@ -134,15 +132,18 @@
 }
 
 .showdesktop-button-dark-hovered {
-	background-color: rgba(200, 200, 200, .4);
+	/* on a dark panel: the dark text at an alpha, Orchis does not draw this button */
+	background-color: rgba(230, 237, 242, 0.4);
 }
 
 .showdesktop-button-light-hovered {
-	background-color: rgba(55, 55, 55, .4);
+	/* on a light panel: the ink at an alpha */
+	background-color: rgba(11, 17, 22, 0.4);
 }
 
 #dashtopanelScrollview .badge {
-	color: rgba(255, 255, 255, 1);
+	/* the dark text: the hotkey number sits on the ink overlay below */
+	color: #E6EDF2;
 	padding: 0.2em 0.5em;
 	border-radius: 1em;
 	font-weight: bold;
@@ -151,11 +152,14 @@
 }
 
 #dashtopanelScrollview .number-overlay {
-	background-color: rgba(0,0,0,0.8);
+	/* the ink at an alpha: the number must read over any icon */
+	background-color: rgba(11, 17, 22, 0.8);
 }
 
 #dashtopanelScrollview .notification-badge {
-	background-color: rgba(214, 0, 0, 0.8);
+	/* the error color, opaque so the ink count on it keeps its contrast over any icon */
+	background-color: #FF7A90;
+	color: #0B1116;
 	border-width: 0;
 }
 
