@@ -108,10 +108,6 @@ export default class DashToPanelExtension extends Extension {
       SETTINGS.set_int('extension-version', this.metadata.version)
     }
 
-    Main.layoutManager.startInOverview = !SETTINGS.get_boolean(
-      'hide-overview-on-startup',
-    )
-
     if (
       SETTINGS.get_boolean('hide-overview-on-startup') &&
       Main.layoutManager._startingUp
