@@ -1003,11 +1003,14 @@ export const Taskbar = class extends EventEmitter {
     }
   }
 
-  sortAppsCompareFunction(appA, appB) {
-    return (
-      getAppStableSequence(appA, this.dtpPanel.monitor) -
-      getAppStableSequence(appB, this.dtpPanel.monitor)
+  // each sequence filters the app's windows, so compute it once per app
+  // rather than once per comparison
+  _sortAppsByStableSequence(apps) {
+    let sequences = new Map(
+      apps.map((app) => [app, getAppStableSequence(app, this.dtpPanel.monitor)]),
     )
+
+    return apps.sort((appA, appB) => sequences.get(appA) - sequences.get(appB))
   }
 
   getAppInfos() {
@@ -1020,7 +1023,7 @@ export const Taskbar = class extends EventEmitter {
     // When using isolation, we filter out apps that have no windows in
     // the current workspace (this check is done in AppIcons.getInterestingWindows)
     let runningApps = this.showRunningApps
-      ? this._getRunningApps().sort(this.sortAppsCompareFunction.bind(this))
+      ? this._sortAppsByStableSequence(this._getRunningApps())
       : []
     let appInfos
 
