@@ -252,20 +252,22 @@ export const PanelStyle = class {
     /*recurse actors */
     if (this._rightBoxOperations.length) {
       // add the system menu as we move it from the rightbox to the panel to position it independently
-      let children = this.panel._rightBox
-        .get_children()
-        .concat([
-          this.panel.statusArea[Utils.getSystemMenuInfo().name].container,
-        ])
+      let children = this.panel._rightBox.get_children()
+      let systemMenu = this.panel.statusArea[Utils.getSystemMenuInfo().name]
+
+      if (systemMenu) children.push(systemMenu.container)
+
       for (let i in children)
         this._recursiveApply(children[i], this._rightBoxOperations, restore)
     }
 
     if (this._centerBoxOperations.length) {
       // add the date menu as we move it from the centerbox to the panel to position it independently
-      let children = this.panel._centerBox
-        .get_children()
-        .concat([this.panel.statusArea.dateMenu.container])
+      let children = this.panel._centerBox.get_children()
+      let dateMenu = this.panel.statusArea.dateMenu
+
+      if (dateMenu) children.push(dateMenu.container)
+
       for (let i in children)
         this._recursiveApply(children[i], this._centerBoxOperations, restore)
     }

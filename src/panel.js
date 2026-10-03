@@ -145,16 +145,10 @@ export const Panel = GObject.registerClass(
         this.menuManager = this.panel.menuManager =
           new PopupMenu.PopupMenuManager(this.panel)
 
-        this._setPanelMenu(
-          systemMenuInfo.name,
-          systemMenuInfo.constructor,
-          this.panel,
-        )
-        this._setPanelMenu('dateMenu', DateMenu.DateMenuButton, this.panel)
-        this._setPanelMenu(
-          'activities',
-          Main.panel.statusArea.activities.constructor,
-          this.panel,
+        // each of these builds a full shell menu (QuickSettings runs every
+        // system indicator), so only the visible ones are created
+        this.getMissingPanelMenus().forEach(({ name, constr }) =>
+          this._setPanelMenu(name, constr, this.panel),
         )
 
         this.panel.add_child(this._leftBox)
@@ -329,7 +323,10 @@ export const Panel = GObject.registerClass(
             }
           },
         ],
-        [
+      )
+
+      if (this.statusArea.activities)
+        this._signalsHandler.add([
           this.statusArea.activities,
           'captured-event',
           (actor, e) => {
@@ -341,7 +338,9 @@ export const Panel = GObject.registerClass(
               this.panelManager.setFocusedMonitor(this.monitor)
             }
           },
-        ],
+        ])
+
+      this._signalsHandler.add(
         [
           this._centerBox,
           'child-added',
@@ -666,6 +665,29 @@ export const Panel = GObject.registerClass(
       }
     }
 
+    // the standalone panel menus that panel-element-positions shows on this
+    // monitor but that were not created yet
+    getMissingPanelMenus() {
+      if (!this.isStandalone) return []
+
+      let menus = {
+        [Pos.SYSTEM_MENU]: {
+          name: Utils.getSystemMenuInfo().name,
+          constr: Utils.getSystemMenuInfo().constructor,
+        },
+        [Pos.DATE_MENU]: { name: 'dateMenu', constr: DateMenu.DateMenuButton },
+        [Pos.ACTIVITIES_BTN]: {
+          name: 'activities',
+          constr: Main.panel.statusArea.activities.constructor,
+        },
+      }
+
+      return PanelSettings.getPanelElementPositions(SETTINGS, this.monitor.index)
+        .filter((pos) => pos.visible && menus[pos.element])
+        .map((pos) => menus[pos.element])
+        .filter(({ name }) => !this.statusArea[name])
+    }
+
     _setPanelMenu(propName, constr, container) {
       if (!this.statusArea[propName]) {
         this.statusArea[propName] = this._getPanelMenu(propName, constr)
@@ -682,11 +704,10 @@ export const Panel = GObject.registerClass(
           parent.remove_child(this.statusArea[propName].container)
         }
 
-        //calling this.statusArea[propName].destroy(); is buggy for now, gnome-shell never
-        //destroys those panel menus...
-        //since we can't destroy the menu (hence properly disconnect its signals), let's
-        //store it so the next time a panel needs one of its kind, we can reuse it instead
-        //of creating a new one
+        // gnome-shell never destroys these menus and their indicators keep
+        // plain global signal connections (51 js/ui/status/system.js and
+        // friends have no destroy handlers), so destroying one leaves handlers
+        // calling into disposed actors: keep it for the next panel instead
         let panelMenu = this.statusArea[propName]
 
         this.menuManager.removeMenu(panelMenu.menu)
@@ -878,15 +899,15 @@ export const Panel = GObject.registerClass(
       setMap(Pos.SHOW_APPS_BTN, this.showAppsIconWrapper.realShowAppsIcon)
       setMap(
         Pos.ACTIVITIES_BTN,
-        this.statusArea.activities ? this.statusArea.activities.container : 0,
+        this.statusArea.activities?.container,
       )
       setMap(Pos.LEFT_BOX, this._leftBox)
       setMap(Pos.TASKBAR, this.taskbar.actor)
       setMap(Pos.CENTER_BOX, this._centerBox)
-      setMap(Pos.DATE_MENU, this.statusArea.dateMenu.container)
+      setMap(Pos.DATE_MENU, this.statusArea.dateMenu?.container)
       setMap(
         Pos.SYSTEM_MENU,
-        this.statusArea[Utils.getSystemMenuInfo().name].container,
+        this.statusArea[Utils.getSystemMenuInfo().name]?.container,
       )
       setMap(Pos.RIGHT_BOX, this._rightBox)
       setMap(Pos.DESKTOP_BTN, this._showDesktopButton)

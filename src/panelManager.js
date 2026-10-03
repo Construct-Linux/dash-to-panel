@@ -255,7 +255,10 @@ export const PanelManager = class {
         'changed::panel-element-positions',
         () => {
           PanelSettings.clearCache('panel-element-positions')
-          this._updatePanelElementPositions()
+
+          if (this.allPanels.some((p) => p.getMissingPanelMenus().length))
+            this._reset()
+          else this._updatePanelElementPositions()
         },
       ],
       [
