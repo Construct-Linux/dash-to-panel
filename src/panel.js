@@ -233,24 +233,12 @@ export const Panel = GObject.registerClass(
           'vfunc_allocate',
           () => (box) => this._mainPanelAllocate(box),
         )
-
-        // remove the extra space before the clock when the message-indicator is displayed
-        if (DateMenu.IndicatorPad) {
-          this._injectionManager.overrideMethod(
-            DateMenu.IndicatorPad.prototype,
-            'vfunc_get_preferred_width',
-            () => () => [0, 0],
-          )
-          this._injectionManager.overrideMethod(
-            DateMenu.IndicatorPad.prototype,
-            'vfunc_get_preferred_height',
-            () => () => [0, 0],
-          )
-        }
       }
 
-      if (!DateMenu.IndicatorPad && this.statusArea.dateMenu) {
-        //3.36 switched to a size constraint applied on an anonymous child
+      if (this.statusArea.dateMenu) {
+        // remove the extra space before the clock when the message indicator
+        // is displayed: the pad is sized by a BindConstraint on an anonymous
+        // child (51 js/ui/dateMenu.js:871-881)
         let indicatorPad = this.statusArea.dateMenu
           .get_first_child()
           .get_first_child()
