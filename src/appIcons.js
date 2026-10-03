@@ -472,6 +472,9 @@ export const TaskbarAppIcon = GObject.registerClass(
       this._timeoutsHandler.destroy()
       this._signalsHandler.destroy()
 
+      // the menu lives in Main.uiGroup, not under the icon
+      this._menu?.destroy()
+
       this._previewMenu.close(true)
     }
 
@@ -2266,6 +2269,8 @@ export const ShowAppsIconWrapper = class extends EventEmitter {
     SETTINGS.disconnect(this._changedAppIconSidePaddingId)
     SETTINGS.disconnect(this._changedAppIconPaddingId)
 
+    // in Main.uiGroup; its actor's destroy handler drops the overview signal
+    this._menu?.destroy()
     this.realShowAppsIcon.destroy()
   }
 }
