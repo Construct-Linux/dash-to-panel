@@ -18,7 +18,6 @@
  */
 
 import Gio from 'gi://Gio'
-import GLib from 'gi://GLib'
 import Shell from 'gi://Shell'
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js'
@@ -33,11 +32,8 @@ import * as PanelManager from './panelManager.js'
 import * as AppIcons from './appIcons.js'
 import * as Utils from './utils.js'
 
-const UBUNTU_DOCK_UUID = 'ubuntu-dock@ubuntu.com'
-
 let panelManager
 let startupCompleteHandler
-let ubuntuDockDelayId = 0
 
 export let DTP_EXTENSION = null
 export let SETTINGS = null
@@ -128,35 +124,11 @@ export default class DashToPanelExtension extends Extension {
 
     this.enableGlobalStyles()
 
-    let completeEnable = () => {
-      panelManager = new PanelManager.PanelManager()
-      panelManager.enable()
-      ubuntuDockDelayId = 0
-
-      return GLib.SOURCE_REMOVE
-    }
-
-    // disable ubuntu dock if present
-    if (Main.extensionManager._extensionOrder.indexOf(UBUNTU_DOCK_UUID) >= 0) {
-      let disabled = global.settings.get_strv('disabled-extensions')
-
-      if (disabled.indexOf(UBUNTU_DOCK_UUID) < 0) {
-        disabled.push(UBUNTU_DOCK_UUID)
-        global.settings.set_strv('disabled-extensions', disabled)
-
-        // wait a bit so ubuntu dock can disable itself and restore the showappsbutton
-        ubuntuDockDelayId = GLib.timeout_add(
-          GLib.PRIORITY_DEFAULT,
-          200,
-          completeEnable,
-        )
-      }
-    } else completeEnable()
+    panelManager = new PanelManager.PanelManager()
+    panelManager.enable()
   }
 
   disable() {
-    if (ubuntuDockDelayId) GLib.Source.remove(ubuntuDockDelayId)
-
     PanelSettings.disable(SETTINGS)
     panelManager.disable()
     PanelSettings.clearCache()
