@@ -33,7 +33,12 @@ import * as PanelSettings from './panelSettings.js'
 import * as Proximity from './proximity.js'
 import * as Utils from './utils.js'
 import * as DesktopIconsIntegration from './desktopIconsIntegration.js'
-import { DTP_EXTENSION, SETTINGS, tracker } from './extension.js'
+import {
+  DTP_EXTENSION,
+  SETTINGS,
+  SETTINGS_CACHE,
+  tracker,
+} from './extension.js'
 
 import GLib from 'gi://GLib'
 import GObject from 'gi://GObject'
@@ -716,10 +721,11 @@ export const PanelManager = class {
   }
 
   _getBoxPointerPreferredHeight(boxPointer, alloc) {
+    // runs for every popup's layout, hence the cached read
     if (
       boxPointer._dtpInPanel &&
       boxPointer.sourceActor &&
-      SETTINGS.get_boolean('intellihide')
+      SETTINGS_CACHE.get('intellihide')
     ) {
       let monitor = Main.layoutManager.findMonitorForActor(
         boxPointer.sourceActor,
@@ -728,7 +734,9 @@ export const PanelManager = class {
         global.dashToPanel.panels,
         (p) => p.monitor == monitor,
       )
-      let excess = alloc.natural_size + panel.outerSize + 10 - monitor.height // 10 is arbitrary
+      let excess = panel
+        ? alloc.natural_size + panel.geom.outerSize + 10 - monitor.height // 10 is arbitrary
+        : 0
 
       if (excess > 0) {
         alloc.natural_size -= excess
