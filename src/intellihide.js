@@ -308,20 +308,16 @@ export const Intellihide = class {
       ])
     }
 
-    PointerWatcher.getPointerWatcher().then(
-      (w) =>
-        (this._pointerWatch = w.addWatch(CHECK_POINTER_MS, (x, y) =>
-          this._checkMousePointer(x, y),
-        )),
+    this._pointerWatch = PointerWatcher.getPointerWatcher().addWatch(
+      CHECK_POINTER_MS,
+      (x, y) => this._checkMousePointer(x, y),
     )
   }
 
   _removeRevealMechanism() {
     if (this._pointerWatch) {
-      PointerWatcher.getPointerWatcher().then((w) => {
-        w._removeWatch(this._pointerWatch)
-        this._pointerWatch = 0
-      })
+      PointerWatcher.getPointerWatcher().removeWatch(this._pointerWatch)
+      this._pointerWatch = 0
     }
 
     if (this._pressureBarrier) {

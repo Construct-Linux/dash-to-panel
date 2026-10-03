@@ -1,49 +1,68 @@
 // GNOME Shell 51 has no ui/pointerWatcher.js: watch the cursor tracker instead
+import GLib from 'gi://GLib'
+
 let watcher
 
+// The first motion after a check disconnects from position-invalidated and
+// arms one timeout: no JS runs per motion event, and the check after the
+// timeout sees where the pointer stopped.
 export function getPointerWatcher() {
-  return new Promise((resolve) => {
-    watcher = watcher || {
-      currentId: 0,
-      watches: {},
-      positionInvalidateId: 0,
-      addWatch: function (delay, cb) {
-        let cursorTracker = global.backend.get_cursor_tracker()
-        let id = ++this.currentId
+  watcher = watcher || {
+    currentId: 0,
+    watches: new Map(),
+    positionInvalidateId: 0,
+    timeoutId: 0,
+    addWatch(delay, cb) {
+      let id = ++this.currentId
 
-        if (!this.positionInvalidateId)
-          this.positionInvalidateId = cursorTracker.connect(
-            'position-invalidated',
-            () => {
-              let now = Date.now()
+      this.watches.set(id, { delay, cb })
+      this._connect()
 
-              Object.values(this.watches).forEach((w) => {
-                if (now > w.ts + w.delay) {
-                  const [coords] = cursorTracker.get_pointer()
+      return id
+    },
+    removeWatch(id) {
+      this.watches.delete(id)
 
-                  w.cb(coords.x, coords.y)
-                  w.ts = now
-                }
-              })
-            },
-          )
+      if (this.watches.size) return
 
-        this.watches[id] = { ts: Date.now(), delay, cb }
+      this._disconnect()
 
-        return id
-      },
-      _removeWatch: function (id) {
-        delete this.watches[id]
+      if (this.timeoutId) {
+        GLib.source_remove(this.timeoutId)
+        this.timeoutId = 0
+      }
+    },
+    _connect() {
+      if (!this.watches.size || this.positionInvalidateId || this.timeoutId)
+        return
 
-        if (!Object.keys(this.watches).length) {
-          global.backend
-            .get_cursor_tracker()
-            .disconnect(this.positionInvalidateId)
-          this.positionInvalidateId = 0
-        }
-      },
-    }
+      this.positionInvalidateId = global.backend
+        .get_cursor_tracker()
+        .connect('position-invalidated', () => this._onMotion())
+    },
+    _disconnect() {
+      if (!this.positionInvalidateId) return
 
-    resolve(watcher)
-  })
+      global.backend
+        .get_cursor_tracker()
+        .disconnect(this.positionInvalidateId)
+      this.positionInvalidateId = 0
+    },
+    _onMotion() {
+      let delay = Math.min(...[...this.watches.values()].map((w) => w.delay))
+
+      this._disconnect()
+      this.timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, delay, () => {
+        let [coords] = global.backend.get_cursor_tracker().get_pointer()
+
+        this.timeoutId = 0
+        this.watches.forEach((w) => w.cb(coords.x, coords.y))
+        this._connect()
+
+        return GLib.SOURCE_REMOVE
+      })
+    },
+  }
+
+  return watcher
 }
