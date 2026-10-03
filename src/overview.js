@@ -42,7 +42,6 @@ const GS_OPEN_HOTKEYS_KEY = 'open-new-window-application-'
 const LABEL_MARGIN = 60
 
 //timeout names
-const T1 = 'swipeEndTimeout'
 const T2 = 'numberOverlayTimeout'
 
 export const Overview = class {
@@ -560,15 +559,5 @@ export const Overview = class {
     this._signalsHandler.removeWithLabel('click-to-exit')
 
     this._clickToExitEnabled = false
-  }
-
-  _onSwipeBegin() {
-    this._swiping = true
-    return true
-  }
-
-  _onSwipeEnd() {
-    this._timeoutsHandler.add([T1, 0, () => (this._swiping = false)])
-    return true
   }
 }

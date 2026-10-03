@@ -562,8 +562,8 @@ export const Taskbar = class extends EventEmitter {
   _onScrollEvent(actor, event) {
     let orientation = this.dtpPanel.getOrientation()
 
-    // reset timeout to avid conflicts with the mousehover event
-    this._timeoutsHandler.add([T1, 0, () => (this._swiping = false)])
+    // a scroll overrides the pending scroll-into-view of a hovered icon
+    this._timeoutsHandler.remove(T1)
 
     // Skip to avoid double events mouse
     if (event.is_pointer_emulated()) return Clutter.EVENT_STOP
