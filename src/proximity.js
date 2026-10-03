@@ -83,9 +83,6 @@ export const ProximityManager = class {
 
     this._signalsHandler = new Utils.GlobalSignalsHandler()
     this._timeoutsHandler = new Utils.TimeoutsHandler()
-
-    this._bindSignals()
-    this._setFocusedWindow()
   }
 
   createWatch(watched, monitorIndex, mode, xThreshold, yThreshold, handler) {
@@ -103,6 +100,12 @@ export const ProximityManager = class {
       handler,
     )
 
+    // window tracking only runs while something watches
+    if (!Object.keys(this._watches).length) {
+      this._bindSignals()
+      this._setFocusedWindow()
+    }
+
     this._watches[this._counter] = watch
     this.update()
 
@@ -113,6 +116,8 @@ export const ProximityManager = class {
     if (this._watches[id]) {
       this._watches[id].destroy()
       delete this._watches[id]
+
+      if (!Object.keys(this._watches).length) this._unbindSignals()
     }
   }
 
@@ -121,10 +126,14 @@ export const ProximityManager = class {
   }
 
   destroy() {
+    Object.keys(this._watches).forEach((id) => this.removeWatch(id))
+  }
+
+  _unbindSignals() {
     this._signalsHandler.destroy()
     this._timeoutsHandler.destroy()
     this._disconnectFocusedWindow()
-    Object.keys(this._watches).forEach((id) => this.removeWatch(id))
+    this._pendingUpdate = false
   }
 
   _bindSignals() {
