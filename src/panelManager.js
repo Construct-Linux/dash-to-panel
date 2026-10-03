@@ -293,7 +293,6 @@ export const PanelManager = class {
             child instanceof St.Bin &&
             this._adjustPanelMenuButton(
               this._getPanelMenuButton(child.get_first_child()),
-              this.primaryPanel.monitor,
               this.primaryPanel.geom.position,
             )
         },
@@ -318,12 +317,6 @@ export const PanelManager = class {
       p.taskbar.iconAnimator.pause()
 
       this._findPanelMenuButtons(p.panelBox).forEach((pmb) => {
-        if (pmb.menu._boxPointer._dtpGetPreferredHeightId) {
-          pmb.menu._boxPointer._container.disconnect(
-            pmb.menu._boxPointer._dtpGetPreferredHeightId,
-          )
-        }
-
         pmb.menu._boxPointer.sourceActor = pmb.menu._boxPointer._dtpSourceActor
         delete pmb.menu._boxPointer._dtpSourceActor
         pmb.menu._boxPointer._userArrowSide = St.Side.TOP
@@ -694,7 +687,7 @@ export const PanelManager = class {
     panel.intellihide.init()
 
     this._findPanelMenuButtons(panelBox).forEach((pmb) =>
-      this._adjustPanelMenuButton(pmb, monitor, panel.geom.position),
+      this._adjustPanelMenuButton(pmb, panel.geom.position),
     )
 
     panel.taskbar.iconAnimator.start()
@@ -712,39 +705,25 @@ export const PanelManager = class {
     this.allPanels.forEach((p) => p.updateElementPositions())
   }
 
-  _adjustPanelMenuButton(button, monitor, arrowSide) {
+  _adjustPanelMenuButton(button, arrowSide) {
     if (button) {
       button.menu._boxPointer._dtpSourceActor =
         button.menu._boxPointer.sourceActor
       button.menu._boxPointer.sourceActor = button
       button.menu._boxPointer._userArrowSide = arrowSide
       button.menu._boxPointer._dtpInPanel = 1
-
-      if (!button.menu._boxPointer.vfunc_get_preferred_height) {
-        button.menu._boxPointer._dtpGetPreferredHeightId =
-          button.menu._boxPointer._container.connect(
-            'get-preferred-height',
-            (actor, forWidth, alloc) => {
-              this._getBoxPointerPreferredHeight(
-                button.menu._boxPointer,
-                alloc,
-                monitor,
-              )
-            },
-          )
-      }
     }
   }
 
-  _getBoxPointerPreferredHeight(boxPointer, alloc, monitor) {
+  _getBoxPointerPreferredHeight(boxPointer, alloc) {
     if (
       boxPointer._dtpInPanel &&
       boxPointer.sourceActor &&
       SETTINGS.get_boolean('intellihide')
     ) {
-      monitor =
-        monitor ||
-        Main.layoutManager.findMonitorForActor(boxPointer.sourceActor)
+      let monitor = Main.layoutManager.findMonitorForActor(
+        boxPointer.sourceActor,
+      )
       let panel = Utils.find(
         global.dashToPanel.panels,
         (p) => p.monitor == monitor,
