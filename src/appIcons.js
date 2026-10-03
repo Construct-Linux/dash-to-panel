@@ -150,31 +150,6 @@ export const TaskbarAppIcon = GObject.registerClass(
       this._signalsHandler = new Utils.GlobalSignalsHandler()
       this._timeoutsHandler = new Utils.TimeoutsHandler()
 
-      // Fix touchscreen issues before the listener is added by the parent constructor.
-      this._onTouchEvent = function (actor, event) {
-        if (event.type() == Clutter.EventType.TOUCH_BEGIN) {
-          // Open the popup menu on long press.
-          this._setPopupTimeout()
-        } else if (
-          this._menuTimeoutId != 0 &&
-          (event.type() == Clutter.EventType.TOUCH_END ||
-            event.type() == Clutter.EventType.TOUCH_CANCEL)
-        ) {
-          // Activate/launch the application.
-          this.activate(1)
-          this._removeMenuTimeout()
-        }
-        // Disable dragging via touch screen as it's buggy as hell. Not perfect for tablet users, but the alternative is way worse.
-        // Also, EVENT_PROPAGATE launches applications twice with this solution, so this.activate(1) above must only be called if there's already a window.
-        return Clutter.EVENT_STOP
-      }
-      // Hack for missing TOUCH_END event.
-      this._onLeaveEvent = function () {
-        this.fake_release()
-        if (this._menuTimeoutId != 0) this.activate(1) // Activate/launch the application if TOUCH_END didn't fire.
-        this._removeMenuTimeout()
-      }
-
       this._dot.set_width(0)
       this._isGroupApps = SETTINGS_CACHE.get('group-apps')
 
@@ -908,7 +883,6 @@ export const TaskbarAppIcon = GObject.registerClass(
     }
 
     popupMenu() {
-      this._removeMenuTimeout()
       this.fake_release()
 
       if (!this._menu) {
@@ -2112,23 +2086,15 @@ export const ShowAppsIconWrapper = class extends EventEmitter {
     this.realShowAppsIcon.show(false)
 
     // Re-use appIcon methods
-    this._removeMenuTimeout = AppDisplay.AppIcon.prototype._removeMenuTimeout
-    this._setPopupTimeout = AppDisplay.AppIcon.prototype._setPopupTimeout
     this._onKeyboardPopupMenu =
       AppDisplay.AppIcon.prototype._onKeyboardPopupMenu
 
-    // No action on clicked (showing of the appsview is controlled elsewhere)
-    this._onClicked = () => this._removeMenuTimeout()
-
-    this.actor.connect('leave-event', this._onLeaveEvent.bind(this))
+    this.actor.connect('leave-event', () => this.actor.fake_release())
     this.actor.connect('button-press-event', this._onButtonPress.bind(this))
-    this.actor.connect('touch-event', this._onTouchEvent.bind(this))
-    this.actor.connect('clicked', this._onClicked.bind(this))
     this.actor.connect('popup-menu', this._onKeyboardPopupMenu.bind(this))
 
     this._menu = null
     this._menuManager = new PopupMenu.PopupMenuManager(this.actor)
-    this._menuTimeoutId = 0
 
     this.realShowAppsIcon._dtpPanel = dtpPanel
     Taskbar.extendDashItemContainer(this.realShowAppsIcon)
@@ -2175,24 +2141,10 @@ export const ShowAppsIconWrapper = class extends EventEmitter {
   }
 
   _onButtonPress(_actor, event) {
-    let button = event.get_button()
-    if (button == 1) {
-      this._setPopupTimeout()
-    } else if (button == 3) {
+    if (event.get_button() == 3) {
       this.popupMenu()
       return Clutter.EVENT_STOP
     }
-    return Clutter.EVENT_PROPAGATE
-  }
-
-  _onLeaveEvent() {
-    this.actor.fake_release()
-    this._removeMenuTimeout()
-  }
-
-  _onTouchEvent(actor, event) {
-    if (event.type() == Clutter.EventType.TOUCH_BEGIN) this._setPopupTimeout()
-
     return Clutter.EVENT_PROPAGATE
   }
 
@@ -2241,7 +2193,6 @@ export const ShowAppsIconWrapper = class extends EventEmitter {
   }
 
   popupMenu(sourceActor = null) {
-    this._removeMenuTimeout()
     this.actor.fake_release()
     this.createMenu()
 
