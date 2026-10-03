@@ -18,8 +18,8 @@ older shells are removed.
 - A notification badge clears even when the update arrives after the app's last
   window is gone. (#2560)
 - `panelManager.js` and `stripe.png` lost their executable bit. (#2433)
-- The `extension-version` default matches the packaged release, so a new
-  account is not told "Dash to Panel has been updated" on its first login.
+- No "Dash to Panel has been updated" notification: the image updates the
+  extension, and enabling it writes no version key.
 - Escape in the overview, opened from the show-apps button, returns to the
   desktop again: GNOME Shell 51 delivers the key through its stage
   `KeyController`, not an event.

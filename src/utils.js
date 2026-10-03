@@ -32,7 +32,6 @@ import Shell from 'gi://Shell'
 import St from 'gi://St'
 import * as Util from 'resource:///org/gnome/shell/misc/util.js'
 import * as Main from 'resource:///org/gnome/shell/ui/main.js'
-import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js'
 
 const SCROLL_TIME = Util.SCROLL_TIME / (Util.SCROLL_TIME > 1 ? 1000 : 1)
 
@@ -544,36 +543,6 @@ export const getIndicators = function (delegate) {
 
 export const getPoint = function (coords) {
   return new Graphene.Point(coords)
-}
-
-export const notify = function (
-  title,
-  body,
-  sourceIconName,
-  notificationIcon,
-  action,
-  isTransient,
-) {
-  let source = MessageTray.getSystemSource()
-  let notification = new MessageTray.Notification({
-    source,
-    title,
-    body,
-    isTransient: isTransient || false,
-    gicon: notificationIcon || null,
-  })
-
-  if (sourceIconName) source.iconName = sourceIconName
-
-  if (action) {
-    if (!(action instanceof Array)) {
-      action = [action]
-    }
-
-    action.forEach((a) => notification.addAction(a.text, a.func))
-  }
-
-  source.addNotification(notification)
 }
 
 /*
