@@ -50,7 +50,6 @@ import Meta from 'gi://Meta'
 import Pango from 'gi://Pango'
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js'
 import * as DateMenu from 'resource:///org/gnome/shell/ui/dateMenu.js'
-import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js'
 
 import * as Intellihide from './intellihide.js'
 import * as Transparency from './transparency.js'
@@ -1612,18 +1611,15 @@ export const Panel = GObject.registerClass(
           scrollAction === 'CHANGE_VOLUME' &&
           !event.is_pointer_emulated()
         ) {
-          let proto = Volume.OutputIndicator.prototype
-          let func =
-            proto._handleScrollEvent ||
-            proto.vfunc_scroll_event ||
-            proto._onScrollEvent
-          let indicator =
-            Main.panel.statusArea[Utils.getSystemMenuInfo().name]._volumeOutput
+          let indicator = Main.panel.statusArea.quickSettings._volumeOutput
+          let delta = direction
+            ? direction == 'up'
+              ? -1
+              : 1
+            : event.get_scroll_delta()[1]
 
-          if (indicator.quickSettingsItems)
-            // new quick settings menu in gnome-shell > 42
-            func(indicator.quickSettingsItems[0], event)
-          else func.call(indicator, 0, event)
+          // same step + OSD as scrolling the indicator itself (51 volume.js:455-462)
+          indicator._handleScroll(indicator.quickSettingsItems[0], delta)
         } else {
           return
         }
