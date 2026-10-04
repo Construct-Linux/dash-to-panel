@@ -158,7 +158,7 @@
 
 #dashtopanelScrollview .notification-badge {
 	/* the error color, opaque so the ink count on it keeps its contrast over any icon */
-	background-color: #FF7A90;
+	background-color: #E8789B;
 	color: #0B1116;
 	border-width: 0;
 }
