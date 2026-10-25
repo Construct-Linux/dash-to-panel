@@ -385,7 +385,7 @@ export const Intellihide = class {
       this._hoveredOut = !hover
       this._hover = hover
       this._queueUpdatePanelPosition()
-    }
+    } else this._hover = false
   }
 
   _pointerIn(x, y, fixedOffset, limitSizeSetting) {
